@@ -1,7 +1,9 @@
-import string
+import json
+import requests
 import scratchattach as s3
+import string
+import os
 
-# Used to get project id from url
 URL_LENGTH = len("https://scratch.mit.edu/projects/")
 # Used to clean up file names
 translation_table = str.maketrans("", "", string.punctuation)
@@ -31,7 +33,6 @@ def menu(arr):
             
     choice = int(choice)
     return choice
-
 # SETUP
 username = input("Enter username: ")
 password = input("Enter password: ")
@@ -49,12 +50,46 @@ for p in projects:
         # Get session id and use to load project
         project = session.connect_project(p["url"][URL_LENGTH:])
 
+
+
         # Make filename
         fn = project.title.translate(translation_table)
-        fn += ".sb3"
+        sb3 =  fn + ".sb3" # put the sb3 in a separate bar so we do filesystem stuff with the filename
+
+        # Removes forbidden characters from file name
+        fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip() 
+        
+        # Prevent the file name using reserved names
+        reserved_names = {
+        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", 
+        "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", 
+        "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    }
+        if fnc.upper() in reserved_names:
+            fnc = f"_{fnc}"
+
+        #i'm not sure if you can have empty titles
+        # wait you can so let's do it
+        
+        if not fnc:
+            fnc = "unnamed project"
+            
+            #for some reason python interprets non-strings as false when used as a boolean so 
+            # we can use that to our advantage and rename it to unnamed project instead
+        
+        # make folder
+        project_dir = os.path.join("downloads", fnc)
+        os.makedirs(project_dir, exist_ok=True)
+
+
+        # TODO: loop through assets and download
+        # TODO: save each project in it's own folder
+        # with a README/instructions.txt containing all relevant metadata that Scratchattach lets us access
+        # TODO: save all comments in comments.txt
+        # TODO: save thumbnail by getting url and using fetch request
 
         project.download(
-            filename=fn,
-            dir="downloads/"
+            filename=fnc,
+            dir=project_dir
         )
         print("\tDownloaded as " + fn + "!")
