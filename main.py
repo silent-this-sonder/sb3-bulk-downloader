@@ -33,6 +33,18 @@ def menu(arr):
             
     choice = int(choice)
     return choice
+
+def download_image(img_name, img_url, save_dir):
+    # Downloads the image from a specified url
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    img_data = requests.get(img_url).content
+    filename = os.path.join(save_dir, os.path.basename(img_name))
+    with open(filename, "wb") as img_f:
+        img_f.write(img_data)
+    print("Image downloaded successfully: " + img_name)
+
 # SETUP
 username = input("Enter username: ")
 password = input("Enter password: ")
