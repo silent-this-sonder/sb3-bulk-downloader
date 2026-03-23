@@ -104,14 +104,14 @@ def download_image(img_name, img_url, save_dir):
 # SETUP
 while True: 
     username = input("Enter username: ")
-    password = input("Enter password (leave blank to skip to Session ID): ")
+    password = input("Enter password: ")
 
     session = None
     if password:
         try:
             session = s3.login(username, password)
         except Exception as e:
-            print("\Login failed. Try again. Try to not mess up many times or Scratch might flag you as a clanker.")
+            print("Login failed. Try again. Try to not mess up many times or Scratch might flag you as a clanker.")
         else:
             break
 
