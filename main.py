@@ -2,7 +2,7 @@ import json
 import os
 import string
 import zipfile
-
+import shutil
 import requests
 import scratchattach as s3
 
@@ -102,30 +102,47 @@ def download_image(img_name, img_url, save_dir):
     print("Image downloaded successfully: " + img_name)
 
 # SETUP
-username = input("Enter username: ")
-password = input("Enter password: ")
-session = s3.login(username, password)
+while True: 
+    username = input("Enter username: ")
+    password = input("Enter password (leave blank to skip to Session ID): ")
+
+    session = None
+    if password:
+        try:
+            session = s3.login(username, password)
+        except Exception as e:
+            print("\Login failed. Try again. Try to not mess up many times or Scratch might flag you as a clanker.")
+        else:
+            break;
+
+    
 
 print("Which projects would you like to download?")
 choice = filter_arg[menu(filter_arg)]
 
 # ACTUAL DOWNLOADING
-projects = projects = session.mystuff_projects(choice, page=1, sort_by="")
+projects = session.mystuff_projects(choice, page=1, sort_by="")
 for p in projects:
-    print(p["title"])
+    print(p.title)
     project = p
     if input("\tDownload? y/n: ") == "y":
         # Get session id and use to load project
-        project = session.connect_project(p["url"][URL_LENGTH:])
+        project = session.connect_project(p.id)
 
 
 
         # Make filename
         fn = project.title.translate(translation_table)
+
+
         jsonfile = fn + ".json"  # just name it .json because that's what it is, it's not even a real sb3
 
         # Removes forbidden characters from file name
         fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip()
+
+        project_id = p.id
+        fnc = f"{fnc}_{project_id}" # this way it won't overwrite projects if you have multpile projects
+        # with the same name
 
         # Prevent the file name using reserved names
         reserved_names = {
@@ -143,28 +160,40 @@ for p in projects:
 
         # make folder
         project_dir = os.path.join("downloads", fnc)
+        
         os.makedirs(project_dir, exist_ok=True)
 
-        project.download(
-            filename=jsonfile,
-            dir=project_dir
-        )
+        try:
+            project.download(
+                filename=jsonfile,
+                dir=project_dir
+            )
+        except Exception as e:
+            print(f"\tFailed to download project JSON: {e}")
+            continue
 
+        # scratchattach's project.download always appends .sb3 to the filename, so the actual file is jsonfile + ".sb3"
+        actual_downloaded_file = jsonfile + ".sb3"
+
+        # Check if the file actually downloaded successfully
+        if not os.path.exists(os.path.join(project_dir, actual_downloaded_file)):
+            print("\tCould not find downloaded project.json. Skipping.")
+            continue
+
+        # Rename the downloaded file to project.json
+        os.rename(
+            os.path.join(project_dir, actual_downloaded_file),
+            os.path.join(project_dir, "project.json")
+        )
 
         # Process downloaded project JSON to fetch md5ext assets
         process_project_json(
-            os.path.join(project_dir, jsonfile),
+            os.path.join(project_dir, "project.json"),
             asset_dir=project_dir
         )
         
         #after that function finished, we now have a folder with all the assets (hopefully) so 
-        # now it's time to copy the project.json into it and zip it up
-
-        
-        os.rename(
-            os.path.join(project_dir, jsonfile),
-            os.path.join(project_dir, "project.json")
-        )
+        # now it's time to zip it up
 
         sb3_filename = f"{fnc}.sb3"
         sb3_path = os.path.join("downloads", sb3_filename)
@@ -176,6 +205,7 @@ for p in projects:
                     zf.write(file_path, arcname)
                 #hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm  as scratch accept isnt the same it can corrupt it
 
-
+        
+        shutil.rmtree(project_dir)
 
         print(f"Project saved as {sb3_path}")
