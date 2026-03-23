@@ -113,7 +113,7 @@ while True:
         except Exception as e:
             print("\Login failed. Try again. Try to not mess up many times or Scratch might flag you as a clanker.")
         else:
-            break;
+            break
 
     
 
