@@ -1,8 +1,10 @@
 import json
+import os
+import string
+import zipfile
+
 import requests
 import scratchattach as s3
-import string
-import os
 
 URL_LENGTH = len("https://scratch.mit.edu/projects/")
 # Used to clean up file names
@@ -13,6 +15,60 @@ filter_arg = [
     "shared",
     "unshared"
 ]
+
+
+def extract_md5exts(node, seen=None):
+    if seen is None:
+        seen = set()
+    if isinstance(node, dict):
+        if "md5ext" in node and isinstance(node["md5ext"], str):
+            seen.add(node["md5ext"])
+        for v in node.values():
+            extract_md5exts(v, seen)
+    elif isinstance(node, list):
+        for item in node:
+            extract_md5exts(item, seen)
+    return seen
+
+
+def download_md5ext(md5ext, out_dir):
+    os.makedirs(out_dir, exist_ok=True)
+    local_name = md5ext.replace("/", "_")
+    local_path = os.path.join(out_dir, local_name)
+
+    if os.path.exists(local_path):
+        return local_path
+
+    url = f"https://cdn.assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+    r = requests.get(url, stream=True, timeout=30)
+    r.raise_for_status()
+
+    with open(local_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=32768):
+            if chunk:
+                f.write(chunk)
+
+    return local_path
+
+
+def process_project_json(project_json_path, asset_dir):
+    # asset_dir is the temporary folder for the project to store assets before zipping it up 
+    with open(project_json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    md5exts = extract_md5exts(data)
+
+    if not md5exts:
+        print("\tNo md5ext assets found in project.json")
+        return
+
+    for md5ext in sorted(md5exts):
+        try:
+            downloaded = download_md5ext(md5ext, asset_dir)
+            print(f"\tDownloaded asset {md5ext} -> {downloaded}")
+        except Exception as e:
+            print(f"\tFailed to download {md5ext}: {e}")
+
 
 def menu(arr):
     # Displays possibly non-String items in a list
@@ -35,7 +91,7 @@ def menu(arr):
     return choice
 
 def download_image(img_name, img_url, save_dir):
-    # Downloads the image from a specified url
+
 
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -66,42 +122,60 @@ for p in projects:
 
         # Make filename
         fn = project.title.translate(translation_table)
-        sb3 =  fn + ".sb3" # put the sb3 in a separate bar so we do filesystem stuff with the filename
+        jsonfile = fn + ".json"  # just name it .json because that's what it is, it's not even a real sb3
 
         # Removes forbidden characters from file name
-        fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip() 
-        
+        fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip()
+
         # Prevent the file name using reserved names
         reserved_names = {
-        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", 
-        "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", 
-        "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-    }
+            "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4",
+            "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2",
+            "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        }
         if fnc.upper() in reserved_names:
             fnc = f"_{fnc}"
 
         #i'm not sure if you can have empty titles
         # wait you can so let's do it
-        
         if not fnc:
             fnc = "unnamed project"
-            
-            #for some reason python interprets non-strings as false when used as a boolean so 
-            # we can use that to our advantage and rename it to unnamed project instead
-        
+
         # make folder
         project_dir = os.path.join("downloads", fnc)
         os.makedirs(project_dir, exist_ok=True)
 
-
-        # TODO: loop through assets and download
-        # TODO: save each project in it's own folder
-        # with a README/instructions.txt containing all relevant metadata that Scratchattach lets us access
-        # TODO: save all comments in comments.txt
-        # TODO: save thumbnail by getting url and using fetch request
-
         project.download(
-            filename=fnc,
+            filename=jsonfile,
             dir=project_dir
         )
-        print("\tDownloaded as " + fn + "!")
+
+
+        # Process downloaded project JSON to fetch md5ext assets
+        process_project_json(
+            os.path.join(project_dir, jsonfile),
+            asset_dir=project_dir
+        )
+        
+        #after that function finished, we now have a folder with all the assets (hopefully) so 
+        # now it's time to copy the project.json into it and zip it up
+
+        
+        os.rename(
+            os.path.join(project_dir, jsonfile),
+            os.path.join(project_dir, "project.json")
+        )
+
+        sb3_filename = f"{fnc}.sb3"
+        sb3_path = os.path.join("downloads", sb3_filename)
+        with zipfile.ZipFile(sb3_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(project_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, project_dir)
+                    zf.write(file_path, arcname)
+                #hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm  as scratch accept isnt the same it can corrupt it
+
+
+
+        print(f"Project saved as {sb3_path}")
