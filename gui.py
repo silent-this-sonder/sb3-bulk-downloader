@@ -6,12 +6,18 @@ root.title("SB3 Bulk Downloader")
 root.geometry("960x720")
 
 # Widgets
-label = tk.Label(
-    root, text="Lorem ipsum dolor sit amet this window will eventually have stuff and we will be with you shortly :D"
-)
+user_label = tk.Label(root, text="Username:")
+user_entry = tk.Entry(root)
+pw_label = tk.Label(root, text="Password:")
+pw_entry = tk.Entry(root)
+login_button = tk.Button(root, text="Login")
 
 # Geometry Manager
-label.pack(pady=10)
+user_label.pack()
+user_entry.pack()
+pw_label.pack()
+pw_entry.pack()
+login_button.pack()
 
 # Application Event Loop
 root.mainloop()
