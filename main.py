@@ -131,6 +131,38 @@ def make_sb3_folder(fnc):
     os.makedirs(project_dir, exist_ok=True)
     return project_dir
 
+def download_sb3(project, fnc, jsonfile):
+    project_dir = make_sb3_folder(fnc)
+    try:
+        project.download(
+            filename=jsonfile,
+            dir=project_dir
+        )
+    except Exception as e:
+        print(f"\tFailed to download project JSON: {e}")
+        return False
+
+    # scratchattach's project.download always appends .sb3 to the filename, so the actual file is jsonfile + ".sb3"
+    actual_downloaded_file = jsonfile + ".sb3"
+
+    # Check if the file actually downloaded successfully
+    if not os.path.exists(os.path.join(project_dir, actual_downloaded_file)):
+        print("\tCould not find downloaded project.json. Skipping.")
+        return False
+
+    # Rename the downloaded file to project.json
+    os.rename(
+        os.path.join(project_dir, actual_downloaded_file),
+        os.path.join(project_dir, "project.json")
+    )
+
+    # Process downloaded project JSON to fetch md5ext assets
+    process_project_json(
+        os.path.join(project_dir, "project.json"),
+        asset_dir=project_dir
+    )
+    return project_dir
+
 def zip_sb3(fnc, project_dir):
     # Zip up the completed folder with all the assets
     sb3_filename = f"{fnc}.sb3"
@@ -178,37 +210,13 @@ if __name__ == "__main__":
         # Process filename
         jsonfile, fnc = make_filenames(p, project, translation_table)
 
-        # DOWNLOADING
-        project_dir = make_sb3_folder(fnc)
-        try:
-            project.download(
-                filename=jsonfile,
-                dir=project_dir
-            )
-        except Exception as e:
-            print(f"\tFailed to download project JSON: {e}")
+        # Download and zip the zb3
+        download = download_sb3(project, fnc, jsonfile)
+        if not download:
             continue
-
-        # scratchattach's project.download always appends .sb3 to the filename, so the actual file is jsonfile + ".sb3"
-        actual_downloaded_file = jsonfile + ".sb3"
-
-        # Check if the file actually downloaded successfully
-        if not os.path.exists(os.path.join(project_dir, actual_downloaded_file)):
-            print("\tCould not find downloaded project.json. Skipping.")
-            continue
-
-        # Rename the downloaded file to project.json
-        os.rename(
-            os.path.join(project_dir, actual_downloaded_file),
-            os.path.join(project_dir, "project.json")
-        )
-
-        # Process downloaded project JSON to fetch md5ext assets
-        process_project_json(
-            os.path.join(project_dir, "project.json"),
-            asset_dir=project_dir
-        )
-
+        project_dir = download
+        
         sb3_path = zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
+
     print("End of project list.")
