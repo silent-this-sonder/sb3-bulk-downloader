@@ -6,7 +6,7 @@ import shutil
 import string
 import zipfile
 
-# FUNCTIONS
+# BASIC FUNCTIONS
 def extract_md5exts(node, seen=None):
     '''Recursive function that finds and returns all the md5exts from the project.json'''
     if seen is None:
@@ -45,6 +45,23 @@ def download_md5ext(md5ext, out_dir):
 
     return local_path
 
+def input_scratch_login():
+    '''Log in to Scratch with user and pw; returns the Session object'''
+    while True: 
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+
+        session = None
+        if password:
+            try:
+                session = s3.login(username, password)
+                print("Login successful!")
+                return session
+            except Exception as e:
+                print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
+            else:
+                return
+
 def process_project_json(project_json_path, asset_dir):
     '''Download the assets from the project.json'''
     # asset_dir is the temporary folder for the project to store assets before zipping it up 
@@ -82,73 +99,87 @@ def menu(arr):
     choice = int(choice)
     return choice
 
+# DOWNLOADER FUNCTIONS
+def make_filenames(p, project, translation_table):
+    fn = project.title.translate(translation_table)
+    jsonfile = fn + ".json"  # just name it .json because that's what it is, it's not even a real sb3
+
+    # Removes forbidden characters from file name
+    fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip()
+
+    project_id = p.id
+    fnc = f"{fnc}_{project_id}" # avoid overwriting projects with identical names
+
+    # Prevent the file name using reserved names
+    reserved_names = {
+        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4",
+        "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2",
+        "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    }
+    if fnc.upper() in reserved_names:
+        fnc = f"_{fnc}"
+
+    # In case of empty title
+    if not fnc:
+        fnc = "unnamed project"
+
+    return jsonfile, fnc
+
+def make_sb3_folder(fnc):
+    # Make folder
+    project_dir = os.path.join("downloads", fnc)
+    os.makedirs(project_dir, exist_ok=True)
+    return project_dir
+
+def zip_sb3(fnc, project_dir):
+    # Zip up the completed folder with all the assets
+    sb3_filename = f"{fnc}.sb3"
+    sb3_path = os.path.join("downloads", sb3_filename)
+    with zipfile.ZipFile(sb3_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(project_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, project_dir)
+                zf.write(file_path, arcname)
+            # hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm as scratch accept isnt the same it can corrupt it
+    shutil.rmtree(project_dir)
+    return sb3_path
+
 # SETUP
-URL_LENGTH = len("https://scratch.mit.edu/projects/")
 # Used to clean up file names
 translation_table = str.maketrans("", "", string.punctuation)
-# Filters the projects in My Stuff
-filter_arg = [
-    "all",
-    "shared",
-    "unshared"
-]
 
-# Log in to scratch
-while True: 
-    username = input("Enter username: ")
-    password = input("Enter password: ")
+# MAIN
+if __name__ == "__main__":
+    # Log in to scratch
+    session = input_scratch_login()
 
-    session = None
-    if password:
-        try:
-            session = s3.login(username, password)
-        except Exception as e:
-            print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
-        else:
-            break
+    # Filters the projects in My Stuff
+    filter_arg = [
+        "all",
+        "shared",
+        "unshared"
+    ]
+    print("Which projects would you like to download?")
+    choice = filter_arg[menu(filter_arg)]
 
-print("Which projects would you like to download?")
-choice = filter_arg[menu(filter_arg)]
+    # ACTUAL DOWNLOADING
+    projects = session.mystuff_projects(choice, page=1, sort_by="")
+    for p in projects:
+        # Title and newline for separation
+        print("\n")
+        print(p.title)
+        project = p
+        if input("\tDownload? y/n: ") != "y":
+            continue
 
-# ACTUAL DOWNLOADING
-projects = session.mystuff_projects(choice, page=1, sort_by="")
-for p in projects:
-    print("\n")
-    print(p.title)
-    project = p
-    if input("\tDownload? y/n: ") == "y":
         # Get session id and use to load project
         project = session.connect_project(p.id)
-
-        # FILENAME STUFF
-        # Make filename
-        fn = project.title.translate(translation_table)
-        jsonfile = fn + ".json"  # just name it .json because that's what it is, it's not even a real sb3
-
-        # Removes forbidden characters from file name
-        fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip()
-
-        project_id = p.id
-        fnc = f"{fnc}_{project_id}" # avoid overwriting projects with identical names
-
-        # Prevent the file name using reserved names
-        reserved_names = {
-            "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4",
-            "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2",
-            "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-        }
-        if fnc.upper() in reserved_names:
-            fnc = f"_{fnc}"
-
-        # In case of empty title
-        if not fnc:
-            fnc = "unnamed project"
+        # Process filename
+        jsonfile, fnc = make_filenames(p, project, translation_table)
 
         # DOWNLOADING
-        # Make folder
-        project_dir = os.path.join("downloads", fnc)
-        os.makedirs(project_dir, exist_ok=True)
-
+        project_dir = make_sb3_folder(fnc)
         try:
             project.download(
                 filename=jsonfile,
@@ -177,17 +208,7 @@ for p in projects:
             os.path.join(project_dir, "project.json"),
             asset_dir=project_dir
         )
-        
-        # Zip up the completed folder with all the assets
-        sb3_filename = f"{fnc}.sb3"
-        sb3_path = os.path.join("downloads", sb3_filename)
-        with zipfile.ZipFile(sb3_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for root, dirs, files in os.walk(project_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, project_dir)
-                    zf.write(file_path, arcname)
-                # hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm as scratch accept isnt the same it can corrupt it
 
-        shutil.rmtree(project_dir)
+        sb3_path = zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
+    print("End of project list.")
