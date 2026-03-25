@@ -5,6 +5,7 @@ import scratchattach as s3
 import shutil
 import string
 import zipfile
+import time as t
 
 # BASIC FUNCTIONS
 def extract_md5exts(node, seen=None):
@@ -202,8 +203,8 @@ if __name__ == "__main__":
         print("\n")
         print(p.title)
         project = p
-        if input("\tDownload? y/n: ") != "y":
-            continue
+        print("Downloading...")
+        
 
         # Get session id and use to load project
         project = session.connect_project(p.id)
@@ -218,5 +219,6 @@ if __name__ == "__main__":
         
         sb3_path = zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
+        t.sleep(3) # sleep 3 seconds so scratch doesn't rate limit
 
     print("End of project list.")
