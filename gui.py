@@ -128,6 +128,7 @@ all_download_label.pack()
 
 # FUNCTIONALITY
 # TODO: store values of input buttons in Tkinter variables
+# TODO: for the optmenu, make it automatically either be selected or deselected cause rn it's in some kind of n/a state?
 # TODO: make "Select all" actually select all
 
 # TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
