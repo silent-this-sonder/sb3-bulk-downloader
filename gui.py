@@ -42,18 +42,6 @@ project_opts = ["all", "shared", "unshared"]
 project_label = tk.Label(root, text="Projects to Download")
 project_optmenu = tk.OptionMenu(root, tk.StringVar(value="all"), *project_opts)
 project_checklist = ScrollableChecklist(root, ["example"] * 50)
-'''
-project_canvas = tk.Canvas(root)
-project_scroll = tk.Scrollbar(root)
-
-# so that the scrollbar affects the list
-project_canvas.config(yscrollcommand=project_scroll.set)
-project_scroll.config(command=project_canvas.yview)
-
-project_frame = tk.Frame(project_canvas)
-project_frame.bind("<Configure>", lambda e: project_canvas.configure(scrollregion=self.canvas.bbox("all")))
-project_canvas.create_window((0, 0), window=project_frame, anchor="nw")
-'''
 
 # GEOMETRY MANAGER
 
@@ -68,10 +56,6 @@ login_button.pack()
 project_label.pack()
 project_optmenu.pack()
 project_checklist.pack(fill="both", expand=True)
-'''
-project_scroll.pack(side="right", fill="y")
-project_canvas.pack(side="right", fill="both", expand=True)
-'''
 
 # APPLICATION EVENT LOOP
 root.mainloop()
