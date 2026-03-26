@@ -15,6 +15,11 @@ class ScrollableChecklist(tk.Frame):
         
         self.scrollbar.pack(side="right", fill="y")
         self.canvas.pack(side="left", fill="both", expand=True)
+
+        # Bind mousewheel scrolling
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)  # Windows/macOS
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel)    # Linux scroll up
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel)    # Linux scroll down
         
         # Populate with checkbuttons
         self.vars = {}
@@ -23,6 +28,14 @@ class ScrollableChecklist(tk.Frame):
             cb = tk.Checkbutton(self.frame, text=item, variable=var)
             cb.pack(anchor="w")
             self.vars[item] = var
+
+    def _on_mousewheel(self, event):
+        if event.num == 4:
+            self.canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.canvas.yview_scroll(1, "units")
+        else:
+            self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
 # MAIN WINDOW
 root = tk.Tk()
@@ -47,7 +60,7 @@ pw_entry = tk.Entry(login_screen, show="*")
 login_button = tk.Button(
     login_screen, text="Login",
     command=switch_to_project_select
-    )
+)
 
 user_label.pack()
 user_entry.pack()
@@ -59,7 +72,8 @@ login_button.pack()
 project_select_screen = tk.Frame()
 project_opts = ["all", "shared", "unshared"]
 project_label = tk.Label(project_select_screen, text="Projects to Download")
-project_optmenu = tk.OptionMenu(project_select_screen, tk.StringVar(value="all"), *project_opts)
+project_filtervar = tk.StringVar(value="all")
+project_optmenu = tk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
 project_selectall_button = tk.Button(project_select_screen, text="Select all")
 project_checklist = ScrollableChecklist(project_select_screen, ["example"] * 50)
 download_button = tk.Button(
