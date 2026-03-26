@@ -127,12 +127,10 @@ all_download_progress.pack()
 all_download_label.pack()
 
 # FUNCTIONALITY
-# TODO: I want to organize the tkinter gui file a bit and make it only handle the widget display
-    # The code should be modular to keep it very neat
-    # I don't have the structure fully fleshed out yet but according to TkinterBuilder,
-    # they turn the gui file into a class so that the main file can just pass in data
-    # and receive output from the gui, which sounds pretty good.
+# TODO: store values of input buttons in Tkinter variables
 # TODO: make "Select all" actually select all
+
+# TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
 # TODO: get project list everytime filter is reselected and show in the checklist
 # TODO: connect downloading to actual downloading code
 # TODO: code for progress bars to update based on info
