@@ -43,6 +43,12 @@ project_label = tk.Label(root, text="Projects to Download")
 project_optmenu = tk.OptionMenu(root, tk.StringVar(value="all"), *project_opts)
 project_checklist = ScrollableChecklist(root, ["example"] * 50)
 
+# Downloading
+# TODO: download button
+# TODO: progress bar for current project
+# TODO: progress bar for all projects
+# TODO: labels for estimated time or numerical progress
+
 # GEOMETRY MANAGER
 
 # Login Screen
