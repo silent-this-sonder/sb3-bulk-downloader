@@ -34,7 +34,7 @@ root.geometry("960x720")
 user_label = tk.Label(root, text="Username:")
 user_entry = tk.Entry(root)
 pw_label = tk.Label(root, text="Password:")
-pw_entry = tk.Entry(root)
+pw_entry = tk.Entry(root, show="*")
 login_button = tk.Button(root, text="Login")
 
 # Project Filtering
