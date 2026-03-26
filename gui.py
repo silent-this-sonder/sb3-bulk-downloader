@@ -16,10 +16,9 @@ class ScrollableChecklist(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
         self.canvas.pack(side="left", fill="both", expand=True)
 
-        # Bind mousewheel scrolling
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)  # Windows/macOS
-        self.canvas.bind_all("<Button-4>", self._on_mousewheel)    # Linux scroll up
-        self.canvas.bind_all("<Button-5>", self._on_mousewheel)    # Linux scroll down
+        # Bind mousewheel scrolling only when mouse is over the widget
+        self.canvas.bind("<Enter>", self._bind_mousewheel)
+        self.canvas.bind("<Leave>", self._unbind_mousewheel)
         
         # Populate with checkbuttons
         self.vars = {}
@@ -35,7 +34,22 @@ class ScrollableChecklist(tk.Frame):
         elif event.num == 5:
             self.canvas.yview_scroll(1, "units")
         else:
-            self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            # Windows: delta is multiple of 120; macOS: delta is ±1 or more
+            if abs(event.delta) >= 120:
+                delta = int(-1 * (event.delta / 120))
+            else:
+                delta = -1 * event.delta
+            self.canvas.yview_scroll(delta, "units")
+
+    def _bind_mousewheel(self, event):
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self, event):
+        self.canvas.unbind_all("<MouseWheel>")
+        self.canvas.unbind_all("<Button-4>")
+        self.canvas.unbind_all("<Button-5>")
 
 # MAIN WINDOW
 root = tk.Tk()
