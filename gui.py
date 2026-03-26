@@ -6,8 +6,8 @@ class ScrollableChecklist(tk.Frame):
     def __init__(self, master, items, **kwargs):
         super().__init__(master, **kwargs)
         self.canvas = tk.Canvas(self)
-        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.frame = tk.Frame(self.canvas)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.frame = ttk.Frame(self.canvas)
         
         self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
@@ -24,7 +24,7 @@ class ScrollableChecklist(tk.Frame):
         self.vars = {}
         for item in items:
             var = tk.IntVar()
-            cb = tk.Checkbutton(self.frame, text=item, variable=var)
+            cb = ttk.Checkbutton(self.frame, text=item, variable=var)
             cb.pack(anchor="w")
             self.vars[item] = var
 
@@ -66,12 +66,12 @@ def switch_to_download():
     download_screen.pack()
 
 # LOGIN SCREEN
-login_screen = tk.Frame()
-user_label = tk.Label(login_screen, text="Username:")
-user_entry = tk.Entry(login_screen)
-pw_label = tk.Label(login_screen, text="Password:")
-pw_entry = tk.Entry(login_screen, show="*")
-login_button = tk.Button(
+login_screen = ttk.Frame()
+user_label = ttk.Label(login_screen, text="Username:")
+user_entry = ttk.Entry(login_screen)
+pw_label = ttk.Label(login_screen, text="Password:")
+pw_entry = ttk.Entry(login_screen, show="*")
+login_button = ttk.Button(
     login_screen, text="Login",
     command=switch_to_project_select
 )
@@ -83,14 +83,14 @@ pw_entry.pack()
 login_button.pack()
 
 # PROJECT SELECT
-project_select_screen = tk.Frame()
+project_select_screen = ttk.Frame()
 project_opts = ["all", "shared", "unshared"]
-project_label = tk.Label(project_select_screen, text="Projects to Download")
+project_label = ttk.Label(project_select_screen, text="Projects to Download")
 project_filtervar = tk.StringVar(value="all")
-project_optmenu = tk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
-project_selectall_button = tk.Button(project_select_screen, text="Select all")
+project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
+project_selectall_button = ttk.Button(project_select_screen, text="Select all")
 project_checklist = ScrollableChecklist(project_select_screen, ["example"] * 50)
-download_button = tk.Button(
+download_button = ttk.Button(
     project_select_screen, text="Download Selected",
     command=switch_to_download
 )
@@ -102,7 +102,7 @@ project_checklist.pack(fill="y", expand=True)
 download_button.pack()
 
 # DOWNLOADING SCREEN
-download_screen = tk.Frame()
+download_screen = ttk.Frame()
 # progress bar for current project
 cur_download_progress = ttk.Progressbar(
     download_screen, orient="horizontal", length=500, mode="determinate"
@@ -112,11 +112,11 @@ all_download_progress = ttk.Progressbar(
     download_screen, orient="horizontal", length=500, mode="determinate"
 )
 # labels for progress
-cur_download_label = tk.Label(
+cur_download_label = ttk.Label(
     download_screen,
     text="Currently downloading [asset title], [num] / [total] assets downloaded"
 )
-all_download_label = tk.Label(
+all_download_label = ttk.Label(
     download_screen,
     text="Currently downloading [project title], [num] / [total] projects downloaded"
 )
