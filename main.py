@@ -183,10 +183,17 @@ def zip_sb3(fnc, project_dir):
 
 # GUI FUNCTIONS
 # To connect to the Tkinter window
-
-# TODO: get login info
-# TODO: validate login
-# TODO: update GUI
+class DownloadController:
+    def __init__(self):
+        self.session = None
+    def validate_login(self, username, password):
+        if password:
+            try:
+                self.session = s3.login(username, password)
+                print("Login successful!")
+                return True
+            except Exception as e:
+                return False
 
 # TODO: get filter
 # TODO: load projects

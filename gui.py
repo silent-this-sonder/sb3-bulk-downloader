@@ -1,4 +1,6 @@
+import main
 import tkinter as tk
+from tkinter import messagebox
 from tkinter import ttk
 
 class ScrollableChecklist(tk.Frame):
@@ -55,6 +57,7 @@ class ScrollableChecklist(tk.Frame):
         self.canvas.unbind_all("<Button-5>")
 
 # FUNCTIONALITY
+download_controller = main.DownloadController()
 
 # Rudimentary screen switching
 def switch_to_project_select():
@@ -64,6 +67,13 @@ def switch_to_project_select():
 def switch_to_download():
     project_select_screen.pack_forget()
     download_screen.pack()
+
+def validate_login():
+    success = download_controller.validate_login(user_entry.get(), pw_entry.get())
+    if not success:
+        messagebox.showerror("Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
+        return
+    switch_to_project_select()
 
 # TODO: deselect all
 
@@ -86,7 +96,7 @@ pw_label = ttk.Label(login_screen, text="Password:")
 pw_entry = ttk.Entry(login_screen, show="*")
 login_button = ttk.Button(
     login_screen, text="Login",
-    command=switch_to_project_select
+    command=validate_login
 )
 
 user_label.pack()
