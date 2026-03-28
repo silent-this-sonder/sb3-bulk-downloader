@@ -20,13 +20,15 @@ class ScrollableChecklist(tk.Frame):
         self.canvas.bind("<Enter>", self._bind_mousewheel)
         self.canvas.bind("<Leave>", self._unbind_mousewheel)
         
+        self.items = items
         # Populate with checkbuttons
-        self.vars = {}
-        for item in items:
-            var = tk.IntVar()
-            cb = ttk.Checkbutton(self.frame, text=item, variable=var)
+        self.vars = []
+        for i in range(len(self.items)):
+            self.vars.append(tk.BooleanVar(value=False))
+        for i in range(len(self.items)):
+            item = self.items[i]
+            cb = ttk.Checkbutton(self.frame, text=item, variable=self.vars[i])
             cb.pack(anchor="w")
-            self.vars[item] = var
 
     def _on_mousewheel(self, event):
         if event.num == 4:
@@ -127,8 +129,6 @@ all_download_progress.pack()
 all_download_label.pack()
 
 # FUNCTIONALITY
-# TODO: store values of input buttons in Tkinter variables
-# TODO: for the optmenu, make it automatically either be selected or deselected cause rn it's in some kind of n/a state?
 # TODO: make "Select all" actually select all
 
 # TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
