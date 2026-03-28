@@ -7,7 +7,7 @@ import string
 import time as t
 import zipfile
 
-# BASIC FUNCTIONS
+# USER INPUT FUNCTIONS
 
 def input_scratch_login():
     '''Log in to Scratch with user and pw; returns the Session object'''
@@ -43,63 +43,6 @@ def menu(arr):
             
     choice = int(choice)
     return choice
-
-def process_project_json(project_json_path, asset_dir):
-    '''Download the assets from the project.json'''
-    # asset_dir is the temporary folder for the project to store assets before zipping it up 
-    with open(project_json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    md5exts = extract_md5exts(data)
-
-    if not md5exts:
-        print("\tNo md5ext assets found in project.json")
-        return
-
-    for md5ext in sorted(md5exts):
-        try:
-            downloaded = download_md5ext(md5ext, asset_dir)
-            print(f"\tDownloaded asset {md5ext} -> {downloaded}")
-        except Exception as e:
-            print(f"\tFailed to download {md5ext}: {e}")
-
-def extract_md5exts(node, seen=None):
-    '''Recursive function that finds and returns all the md5exts from the project.json'''
-    if seen is None:
-        seen = set()
-    if isinstance(node, dict):
-        if "md5ext" in node and isinstance(node["md5ext"], str):
-            seen.add(node["md5ext"])
-        for v in node.values():
-            extract_md5exts(v, seen)
-    elif isinstance(node, list):
-        for item in node:
-            extract_md5exts(item, seen)
-    return seen
-
-def download_md5ext(md5ext, out_dir):
-    '''Get the asset from Scratch and write it to a file'''
-
-    # Set up the directory, file name, and path
-    os.makedirs(out_dir, exist_ok=True)
-    local_name = md5ext.replace("/", "_") # avoid accidentally making subfolders
-    local_path = os.path.join(out_dir, local_name)
-
-    # avoid duplicate downloads
-    if os.path.exists(local_path):
-        return local_path
-
-    # actually download
-    url = f"https://cdn.assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
-    r = requests.get(url, stream=True, timeout=30)
-    r.raise_for_status() # in case of a failed request
-
-    with open(local_path, "wb") as f:
-        for chunk in r.iter_content(chunk_size=32768):
-            if chunk:
-                f.write(chunk)
-
-    return local_path
 
 # DOWNLOADER FUNCTIONS
 def download_sb3(project, fnc, jsonfile):
@@ -167,6 +110,63 @@ def make_filenames(p, project, translation_table):
 
     return jsonfile, fnc
 
+def process_project_json(project_json_path, asset_dir):
+    '''Download the assets from the project.json'''
+    # asset_dir is the temporary folder for the project to store assets before zipping it up 
+    with open(project_json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    md5exts = extract_md5exts(data)
+
+    if not md5exts:
+        print("\tNo md5ext assets found in project.json")
+        return
+
+    for md5ext in sorted(md5exts):
+        try:
+            downloaded = download_md5ext(md5ext, asset_dir)
+            print(f"\tDownloaded asset {md5ext} -> {downloaded}")
+        except Exception as e:
+            print(f"\tFailed to download {md5ext}: {e}")
+
+def extract_md5exts(node, seen=None):
+    '''Recursive function that finds and returns all the md5exts from the project.json'''
+    if seen is None:
+        seen = set()
+    if isinstance(node, dict):
+        if "md5ext" in node and isinstance(node["md5ext"], str):
+            seen.add(node["md5ext"])
+        for v in node.values():
+            extract_md5exts(v, seen)
+    elif isinstance(node, list):
+        for item in node:
+            extract_md5exts(item, seen)
+    return seen
+
+def download_md5ext(md5ext, out_dir):
+    '''Get the asset from Scratch and write it to a file'''
+
+    # Set up the directory, file name, and path
+    os.makedirs(out_dir, exist_ok=True)
+    local_name = md5ext.replace("/", "_") # avoid accidentally making subfolders
+    local_path = os.path.join(out_dir, local_name)
+
+    # avoid duplicate downloads
+    if os.path.exists(local_path):
+        return local_path
+
+    # actually download
+    url = f"https://cdn.assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+    r = requests.get(url, stream=True, timeout=30)
+    r.raise_for_status() # in case of a failed request
+
+    with open(local_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=32768):
+            if chunk:
+                f.write(chunk)
+
+    return local_path
+
 def zip_sb3(fnc, project_dir):
     '''Zip up the completed folder with all the assets'''
     sb3_filename = f"{fnc}.sb3"
@@ -181,12 +181,28 @@ def zip_sb3(fnc, project_dir):
     shutil.rmtree(project_dir)
     return sb3_path
 
-# SETUP
-# Used to clean up file names
-translation_table = str.maketrans("", "", string.punctuation)
+# GUI FUNCTIONS
+# To connect to the Tkinter window
+
+# TODO: get login info
+# TODO: validate login
+# TODO: update GUI
+
+# TODO: get filter
+# TODO: load projects
+# TODO: update GUI
+
+# TODO: get selected projects
+# TODO: download projects
+# TODO: update GUI
 
 # MAIN
-if __name__ == "__main__":
+def cli_downloader():
+    print("SB3 BULK DOWNLOADER")
+
+    # Used to clean up file names
+    translation_table = str.maketrans("", "", string.punctuation)
+
     # Log in to scratch
     session = input_scratch_login()
 
@@ -226,3 +242,6 @@ if __name__ == "__main__":
         t.sleep(3)
 
     print("\nEnd of project list. There are no more projects to download.")
+
+if __name__ == "__main__":
+    cli_downloader()
