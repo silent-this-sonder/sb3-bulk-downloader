@@ -54,10 +54,7 @@ class ScrollableChecklist(tk.Frame):
         self.canvas.unbind_all("<Button-4>")
         self.canvas.unbind_all("<Button-5>")
 
-# MAIN WINDOW
-root = tk.Tk()
-root.title("SB3 Bulk Downloader")
-root.geometry("960x720")
+# FUNCTIONALITY
 
 # Rudimentary screen switching
 def switch_to_project_select():
@@ -67,6 +64,19 @@ def switch_to_project_select():
 def switch_to_download():
     project_select_screen.pack_forget()
     download_screen.pack()
+
+# TODO: deselect all
+
+# TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
+# TODO: get project list everytime filter is reselected and show in the checklist
+# TODO: connect downloading to actual downloading code
+# TODO: code for progress bars to update based on info
+# TODO: code for progress labels to update based on info
+
+# MAIN WINDOW
+root = tk.Tk()
+root.title("SB3 Bulk Downloader")
+root.geometry("960x720")
 
 # LOGIN SCREEN
 login_screen = ttk.Frame()
@@ -134,15 +144,6 @@ cur_download_progress.pack()
 cur_download_label.pack()
 all_download_progress.pack()
 all_download_label.pack()
-
-# FUNCTIONALITY
-# TODO: deselect all
-
-# TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
-# TODO: get project list everytime filter is reselected and show in the checklist
-# TODO: connect downloading to actual downloading code
-# TODO: code for progress bars to update based on info
-# TODO: code for progress labels to update based on info
 
 # GEOMETRY MANAGER
 login_screen.pack()
