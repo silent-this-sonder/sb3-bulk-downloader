@@ -21,13 +21,14 @@ class ScrollableChecklist(tk.Frame):
         self.canvas.bind("<Leave>", self._unbind_mousewheel)
         
         self.items = items
+        self.buttons = []
         # Populate with checkbuttons
         self.vars = []
         for i in range(len(self.items)):
-            self.vars.append(tk.BooleanVar(value=False))
-        for i in range(len(self.items)):
             item = self.items[i]
+            self.vars.append(tk.BooleanVar(value=False))
             cb = ttk.Checkbutton(self.frame, text=item, variable=self.vars[i])
+            self.buttons.append(cb)
             cb.pack(anchor="w")
 
     def _on_mousewheel(self, event):
@@ -90,7 +91,13 @@ project_opts = ["all", "shared", "unshared"]
 project_label = ttk.Label(project_select_screen, text="Projects to Download")
 project_filtervar = tk.StringVar(value="all")
 project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
-project_selectall_button = ttk.Button(project_select_screen, text="Select all")
+
+# Select all the projects in the list
+def select_all_projects():
+    for buttonvar in project_checklist.vars:
+        buttonvar.set(True)
+project_selectall_button = ttk.Button(project_select_screen, command=select_all_projects, text="Select all")
+
 project_checklist = ScrollableChecklist(project_select_screen, ["example"] * 50)
 download_button = ttk.Button(
     project_select_screen, text="Download Selected",
@@ -129,7 +136,7 @@ all_download_progress.pack()
 all_download_label.pack()
 
 # FUNCTIONALITY
-# TODO: make "Select all" actually select all
+# TODO: deselect all
 
 # TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
 # TODO: get project list everytime filter is reselected and show in the checklist
