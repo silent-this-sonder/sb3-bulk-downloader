@@ -68,6 +68,19 @@ def switch_to_download():
     project_select_screen.pack_forget()
     download_screen.pack()
 
+# Select all the projects in the list
+def select_all_projects():
+    for buttonvar in project_checklist.vars:
+        buttonvar.set(True)
+    project_selectall_button.config(text="Deselect all", command=deselect_all_projects)
+
+# Deselect the projects in the list
+def deselect_all_projects():
+    for buttonvar in project_checklist.vars:
+        buttonvar.set(False)
+    project_selectall_button.config(text="Select all", command=select_all_projects)
+
+# Login validation
 def validate_login():
     success = download_controller.validate_login(user_entry.get(), pw_entry.get())
     if not success:
@@ -75,7 +88,6 @@ def validate_login():
         return
     switch_to_project_select()
 
-# TODO: turn the current main.py into a thing that does stuff based on input from the gui and outputs data to the gui, which inputs stuff to the main.py...it's a cycle
 # TODO: get project list everytime filter is reselected and show in the checklist
 # TODO: connect downloading to actual downloading code
 # TODO: code for progress bars to update based on info
@@ -109,17 +121,6 @@ project_opts = ["all", "shared", "unshared"]
 project_label = ttk.Label(project_select_screen, text="Projects to Download")
 project_filtervar = tk.StringVar(value="all")
 project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
-
-# Select all the projects in the list
-def select_all_projects():
-    for buttonvar in project_checklist.vars:
-        buttonvar.set(True)
-    project_selectall_button.config(text="Deselect all", command=deselect_all_projects)
-# Deselect the projects in the list
-def deselect_all_projects():
-    for buttonvar in project_checklist.vars:
-        buttonvar.set(False)
-    project_selectall_button.config(text="Select all", command=select_all_projects)
 project_selectall_button = ttk.Button(project_select_screen, command=select_all_projects, text="Select all")
 
 project_checklist = ScrollableChecklist(project_select_screen, ["example"] * 50)
