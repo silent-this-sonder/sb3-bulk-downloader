@@ -4,7 +4,6 @@ Have you ever wanted to download all your Scratch projects to your computer, but
 That program is this: it will help you quickly download all your projects from your _own_ Scratch account without needing to download them manually or wait 3 months for a reply from the so-called "Help Center."
 
 ## Walkthrough
-Currently, the program is not entirely finished, but we can give you a breakdown of how it works:
 
 ### Installation
 todo
@@ -16,6 +15,9 @@ There are two ways to use SB3 Bulk Downloader: the CLI or the GUI. Currently, on
 3. Filter your project list: whether you want all, only unshared, or only shared projects to download
 4. Sit back, play games, and go grab an extremely caffeinated coffee so you can sit and relax and sip away ~as your heart rate rises~
 5. Don't close the program, unplug your computer, or lose Internet while doing this or your download will go kaboom :smiley:
+
+## How It Works
+todo
 
 ## Support & Troubleshooting
 todo
