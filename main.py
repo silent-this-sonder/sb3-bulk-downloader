@@ -187,13 +187,14 @@ class DownloadController:
     def __init__(self):
         self.session = None
     def validate_login(self, username, password):
-        if password:
-            try:
-                self.session = s3.login(username, password)
-                print("Login successful!")
-                return True
-            except Exception as e:
-                return False
+        if not (username and password):
+            return False
+        try:
+            self.session = s3.login(username, password)
+            print("Login successful!")
+            return True
+        except Exception as e:
+            return False
 
 # TODO: get filter
 # TODO: load projects
