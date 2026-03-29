@@ -195,6 +195,8 @@ class DownloadController:
             return True
         except Exception as e:
             return False
+    def get_projects(self, filter="all"):
+        return self.session.mystuff_projects(filter, page=1, sort_by="")
 
 # TODO: get filter
 # TODO: load projects

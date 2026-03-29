@@ -26,13 +26,20 @@ class ScrollableChecklist(tk.Frame):
         self.buttons = []
         # Populate with checkbuttons
         self.vars = []
+        self._make_checkbuttons(items)
+
+    def _make_checkbuttons(self, items):
+        self.items = items
+        self.buttons = []
+        # Populate with checkbuttons
+        self.vars = []
         for i in range(len(self.items)):
             item = self.items[i]
             self.vars.append(tk.BooleanVar(value=False))
             cb = ttk.Checkbutton(self.frame, text=item, variable=self.vars[i])
             self.buttons.append(cb)
             cb.pack(anchor="w")
-
+    
     def _on_mousewheel(self, event):
         if event.num == 4:
             self.canvas.yview_scroll(-1, "units")
@@ -88,7 +95,14 @@ def validate_login():
         return
     switch_to_project_select()
 
-# TODO: get project list everytime filter is reselected and show in the checklist
+# Get project list everytime filter is reselected and show in the checklist
+def get_project_list(filter):
+    projects = download_controller.get_projects(filter)
+    project_names = []
+    for project in projects:
+        project_names.append(project.title)
+    project_checklist._make_checkbuttons(project_names)
+
 # TODO: connect downloading to actual downloading code
 # TODO: code for progress bars to update based on info
 # TODO: code for progress labels to update based on info
@@ -119,11 +133,13 @@ login_button.pack(pady=10)
 project_select_screen = ttk.Frame()
 project_opts = ["all", "shared", "unshared"]
 project_label = ttk.Label(project_select_screen, text="Projects to Download")
+
 project_filtervar = tk.StringVar(value="all")
 project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
+project_filtervar.trace_add("write", lambda *args: get_project_list(project_filtervar.get()))
 project_selectall_button = ttk.Button(project_select_screen, command=select_all_projects, text="Select all")
 
-project_checklist = ScrollableChecklist(project_select_screen, ["example"] * 50)
+project_checklist = ScrollableChecklist(project_select_screen, [])
 download_button = ttk.Button(
     project_select_screen, text="Download Selected",
     command=switch_to_download
