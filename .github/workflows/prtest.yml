@@ -30,10 +30,14 @@ jobs:
       - shell: bash
         run: |
           cat << 'EOF' > runner.py
-          import subprocess, time, pyautogui, sys
+          import subprocess, time, pyautogui, sys, os
           p = subprocess.Popen([sys.executable, 'gui.py'])
           time.sleep(5)
-          pyautogui.screenshot('${{ matrix.os }}.png')
+          if sys.platform == "darwin":
+            print("mac sucks")
+            subprocess.run(['screencapture', '-x', 'macos-latest.png'])
+          else: 
+            pyautogui.screenshot('${{ matrix.os }}.png')
           p.terminate()
           EOF
           
