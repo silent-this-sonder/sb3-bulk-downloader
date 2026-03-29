@@ -32,7 +32,7 @@ jobs:
           cat << 'EOF' > runner.py
           import subprocess, time, pyautogui, sys, os
           p = subprocess.Popen([sys.executable, 'gui.py'])
-          time.sleep(20)
+          time.sleep(20) #sleep
           if sys.platform == "darwin":
             print("mac sucks")
             subprocess.run(['screencapture', '-x', 'macos-latest.png'])
