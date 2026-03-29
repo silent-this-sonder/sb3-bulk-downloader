@@ -99,11 +99,11 @@ login_button = ttk.Button(
     command=validate_login
 )
 
-user_label.pack()
-user_entry.pack()
-pw_label.pack()
-pw_entry.pack()
-login_button.pack()
+user_label.pack(pady=5)
+user_entry.pack(pady=5)
+pw_label.pack(pady=5)
+pw_entry.pack(pady=5)
+login_button.pack(pady=10)
 
 # PROJECT SELECT
 project_select_screen = ttk.Frame()
