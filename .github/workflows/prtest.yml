@@ -68,7 +68,7 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update gui screenshots"
+          commit_message: "chore: update gui screenshots [skip ci]"
           file_pattern: '.screenshots/*.png'
 
       - uses: peter-evans/find-comment@v3
@@ -76,7 +76,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: 'GUI Screenshots Table'
+          body-includes: 'Screenshots Table'
 
       - uses: peter-evans/create-or-update-comment@v4
         with:
@@ -84,7 +84,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            ### GUI Screenshots Table
+            ### Screenshots Table
 
             | OS | Screenshot |
             |----|------------|
