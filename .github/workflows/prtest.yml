@@ -3,6 +3,7 @@ name: GUI Screenshot Tests
 on:
   pull_request:
 
+
 jobs:
   screenshot:
     runs-on: ${{ matrix.os }}
