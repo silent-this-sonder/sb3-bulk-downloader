@@ -71,10 +71,23 @@ jobs:
           pattern: screenshot-*
           merge-multiple: true
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update gui screenshots [skip ci]"
-          file_pattern: '.screenshots/*.png'
+      - name: Publish screenshots to dedicated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+  
+          if git fetch origin screenshots 2>/dev/null; then
+            git checkout screenshots
+          else
+            git checkout --orphan screenshots
+            git rm -rf . --quiet || true
+          fi
+  
+          mkdir -p pr-${{ github.event.pull_request.number }}
+          cp /tmp/screenshots/*.png pr-${{ github.event.pull_request.number }}/
+          git add pr-${{ github.event.pull_request.number }}
+          git diff --staged --quiet || git commit -m "screenshots: PR #${{ github.event.pull_request.number }}"
+          git push origin screenshots
 
       - uses: peter-evans/find-comment@v3
         id: fc
