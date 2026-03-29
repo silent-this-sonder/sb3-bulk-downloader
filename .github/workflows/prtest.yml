@@ -2,6 +2,7 @@ name: GUI Screenshot Tests
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   screenshot:
