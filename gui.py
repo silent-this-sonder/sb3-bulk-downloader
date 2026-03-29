@@ -29,6 +29,9 @@ class ScrollableChecklist(tk.Frame):
         self._make_checkbuttons(items)
 
     def _make_checkbuttons(self, items):
+        # get rid of old buttons
+        for button in self.buttons:
+            button.destroy()
         self.items = items
         self.buttons = []
         # Populate with checkbuttons
