@@ -6,7 +6,7 @@ enable_free_tier: true
 inheritance: false
 reviews:
   profile: chill
-  request_changes_workflow: false
+  request_changes_workflow: true
   high_level_summary: true
   high_level_summary_instructions: ''
   high_level_summary_placeholder: '@coderabbitai summary'
@@ -17,7 +17,7 @@ reviews:
   review_details: false
   commit_status: true
   fail_commit_status: false
-  collapse_walkthrough: true
+  collapse_walkthrough: false
   changed_files_summary: true
   sequence_diagrams: true
   estimate_code_review_effort: true
@@ -26,9 +26,9 @@ reviews:
   related_prs: true
   suggested_labels: true
   labeling_instructions: []
-  auto_apply_labels: false
+  auto_apply_labels: true
   suggested_reviewers: true
-  auto_assign_reviewers: false
+  auto_assign_reviewers: true
   in_progress_fortune: true
   poem: true
   enable_prompt_for_ai_agents: true
