@@ -7,12 +7,13 @@ Currently, the program is not entirely finished, but we can give you a breakdown
 ### Installation
 todo
 
-### Steps
-1. Open the program
-2. It will ask you for your Scratch login so you can download your unshared projects as well
-3. Select whether you want all, unshared or shared projects to download
+### Usage
+There are two ways to use SB3 Bulk Downloader: the CLI or the GUI. Currently, only the CLI is fully usable.
+1. Run main.py
+2. Log in with your Scratch username and password (This allows you to download unshared projects as well)
+3. Filter your project list: whether you want all, only unshared, or only shared projects to download
 4. Sit back, play games, and go grab an extremely caffeinated coffee so you can sit and relax and sip away ~as your heart rate rises~
-5. Don't close the program, unplug your computer, or lose internet while doing this or your download will go kaboom
+5. Don't close the program, unplug your computer, or lose Internet while doing this or your download will go kaboom :smiley:
 
 ## Support & Troubleshooting
 todo
