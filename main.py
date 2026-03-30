@@ -186,6 +186,7 @@ def zip_sb3(fnc, project_dir):
 class DownloadController:
     def __init__(self):
         self.session = None
+        self.projects = []
     def validate_login(self, username, password):
         if not (username and password):
             return False
@@ -195,8 +196,17 @@ class DownloadController:
             return True
         except Exception as e:
             return False
-    def get_projects(self, filter="all"):
-        return self.session.mystuff_projects(filter, page=1, sort_by="")
+    def get_projects(self, filter_arg="all"):
+        self.projects = []
+        pagenum = 1
+        while True:
+            try: 
+                projects = self.session.mystuff_projects(filter_arg, page=pagenum, sort_by="")
+                self.projects += projects
+            except:
+                break
+            pagenum += 1
+        return self.projects
 
 # TODO: get filter
 # TODO: load projects
@@ -225,38 +235,38 @@ def cli_downloader():
     print("Which projects would you like to download?")
     choice = filter_arg[menu(filter_arg)]
 
-    # ACTUAL DOWNLOADING
+    # ACTUAL 
+    pagenum = 1
     while True:
-        pagenum = 1
         try: 
             projects = session.mystuff_projects(choice, page=pagenum, sort_by="")
         except:
-            print("\nEnd of project list. There are no more projects to download.")
+            break
+        pagenum += 1
         
-        for p in projects:
-            # Title and newline for separation
-            print("\n")
-            print(p.title)
-            project = p
-            print("Downloading...")
-    
-            # Get session id and use to load project
-            project = session.connect_project(p.id)
-            # Process filename
-            jsonfile, fnc = make_filenames(p, project, translation_table)
-    
-            # Download and zip the zb3
-            download = download_sb3(project, fnc, jsonfile)
-            if not download:
-                continue
-            project_dir = download
-            
-            sb3_path = zip_sb3(fnc, project_dir)
-            print(f"Project saved as {sb3_path}")
-            pagenum += 1
-    
-            # sleep 3 seconds so scratch doesn't rate limit
-            t.sleep(3)
+    for p in projects:
+        # Title and newline for separation
+        print("\n")
+        print(p.title)
+        project = p
+        print("Downloading...")
+
+        # Get session id and use to load project
+        project = session.connect_project(p.id)
+        # Process filename
+        jsonfile, fnc = make_filenames(p, project, translation_table)
+
+        # Download and zip the zb3
+        download = download_sb3(project, fnc, jsonfile)
+        if not download:
+            continue
+        project_dir = download
+        
+        sb3_path = zip_sb3(fnc, project_dir)
+        print(f"Project saved as {sb3_path}")
+
+        # sleep 3 seconds so scratch doesn't rate limit
+        t.sleep(3)
 
     print("\nEnd of project list. There are no more projects to download.")
 
