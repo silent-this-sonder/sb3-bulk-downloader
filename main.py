@@ -204,7 +204,9 @@ class DownloadController:
             try: 
                 projects = self.session.mystuff_projects(filter_arg, page=pagenum, sort_by="")
                 self.projects += projects
-            except:
+            except Exception as e:
+                print("the thing broke here's your error:", e)
+                traceback.print_exc()
                 break
             pagenum += 1
         return self.projects
