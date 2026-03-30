@@ -100,6 +100,7 @@ def validate_login():
 
 # Get project list everytime filter is reselected and show in the checklist
 def get_project_list(filter):
+    # TODO: use .after() instead of doing it synchronously so that the GUI doesn't freeze while waiting for projects to load
     projects = download_controller.get_projects(filter)
     project_names = []
     for project in projects:
