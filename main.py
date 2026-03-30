@@ -199,6 +199,8 @@ class DownloadController:
             return False
     def get_projects(self, filter_arg="all"):
         self.projects = []
+        if filter_arg == "unshared":
+            filter_arg = "notshared"
         pagenum = 1
         while True:
             try: 
