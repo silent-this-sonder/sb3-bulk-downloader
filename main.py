@@ -229,7 +229,7 @@ def cli_downloader():
     filter_arg = [
         "all",
         "shared",
-        "unshared"
+        "notshared"
     ]
     print("Which projects would you like to download?")
     choice = filter_arg[menu(filter_arg)]
