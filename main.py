@@ -231,7 +231,7 @@ def cli_downloader():
         try: 
             projects = session.mystuff_projects(choice, page=pagenum, sort_by="")
         except:
-            print("no projects :( broke")
+            print("\nEnd of project list. There are no more projects to download.")
         
         for p in projects:
             # Title and newline for separation
