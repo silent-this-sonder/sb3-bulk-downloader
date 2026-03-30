@@ -208,10 +208,6 @@ class DownloadController:
             pagenum += 1
         return self.projects
 
-# TODO: get filter
-# TODO: load projects
-# TODO: update GUI
-
 # TODO: get selected projects
 # TODO: download projects
 # TODO: update GUI
