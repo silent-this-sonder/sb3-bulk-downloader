@@ -6,6 +6,7 @@ import shutil
 import string
 import time as t
 import zipfile
+import traceback
 
 # USER INPUT FUNCTIONS
 
@@ -236,7 +237,10 @@ def cli_downloader():
     while True:
         try: 
             projects = session.mystuff_projects(choice, page=pagenum, sort_by="")
-        except:
+            
+        except Exception as e:
+            print("the thing broke here's your error:", e)
+            traceback.print_exc()
             break
         pagenum += 1
         
