@@ -226,30 +226,37 @@ def cli_downloader():
     choice = filter_arg[menu(filter_arg)]
 
     # ACTUAL DOWNLOADING
-    projects = session.mystuff_projects(choice, page=1, sort_by="")
-    for p in projects:
-        # Title and newline for separation
-        print("\n")
-        print(p.title)
-        project = p
-        print("Downloading...")
-
-        # Get session id and use to load project
-        project = session.connect_project(p.id)
-        # Process filename
-        jsonfile, fnc = make_filenames(p, project, translation_table)
-
-        # Download and zip the zb3
-        download = download_sb3(project, fnc, jsonfile)
-        if not download:
-            continue
-        project_dir = download
+    while True:
+        pagenum = 1
+        try: 
+            projects = session.mystuff_projects(choice, page=pagenum, sort_by="")
+        except:
+            print("no projects :( broke")
         
-        sb3_path = zip_sb3(fnc, project_dir)
-        print(f"Project saved as {sb3_path}")
-
-        # sleep 3 seconds so scratch doesn't rate limit
-        t.sleep(3)
+        for p in projects:
+            # Title and newline for separation
+            print("\n")
+            print(p.title)
+            project = p
+            print("Downloading...")
+    
+            # Get session id and use to load project
+            project = session.connect_project(p.id)
+            # Process filename
+            jsonfile, fnc = make_filenames(p, project, translation_table)
+    
+            # Download and zip the zb3
+            download = download_sb3(project, fnc, jsonfile)
+            if not download:
+                continue
+            project_dir = download
+            
+            sb3_path = zip_sb3(fnc, project_dir)
+            print(f"Project saved as {sb3_path}")
+            pagenum += 1
+    
+            # sleep 3 seconds so scratch doesn't rate limit
+            t.sleep(3)
 
     print("\nEnd of project list. There are no more projects to download.")
 
