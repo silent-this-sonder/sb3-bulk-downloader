@@ -134,12 +134,13 @@ login_button.pack(pady=10)
 
 # PROJECT SELECT
 project_select_screen = ttk.Frame()
-project_opts = ["all", "shared", "unshared"]
+project_opts = ["Select an option", "all", "shared", "unshared"]
 project_label = ttk.Label(project_select_screen, text="Projects to Download")
 
-project_filtervar = tk.StringVar(value="all")
+project_filtervar = tk.StringVar(value="Select an option")
 project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
 project_filtervar.trace_add("write", lambda *args: get_project_list(project_filtervar.get()))
+
 project_selectall_button = ttk.Button(project_select_screen, command=select_all_projects, text="Select all")
 
 project_checklist = ScrollableChecklist(project_select_screen, [])
