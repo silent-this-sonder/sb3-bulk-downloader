@@ -96,11 +96,12 @@ def deselect_all_projects():
 
 # Login validation
 def validate_login():
-    success = download_controller.validate_login(user_entry.get(), pw_entry.get())
-    if not success:
-        messagebox.showerror("Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
-        return
-    switch_to_project_select()
+    Thread(
+        target=_validate_login,
+        args=(user_entry.get(), pw_entry.get(),q),
+        daemon=True
+    ).start()
+    check_queue()
 
 # Get project list everytime filter is reselected and show in the checklist
 def get_project_list(filter_arg):
@@ -124,6 +125,16 @@ def check_queue():
         callback()
     except:
         root.after(100, check_queue)
+
+def _validate_login(username, pw, q):
+    success = download_controller.validate_login(username, pw)
+    if not success:
+        q.put(lambda: messagebox.showerror(
+            "Login Failed",
+            "Try again. Try not to mess up many times or Scratch might flag you as a clanker."
+        ))
+        return
+    q.put(lambda: switch_to_project_select())
 
 def _get_project_list(filter_arg, q):
     projects = download_controller.get_projects(filter_arg)
