@@ -70,9 +70,42 @@ class ScrollableChecklist(tk.Frame):
         self.canvas.unbind_all("<Button-4>")
         self.canvas.unbind_all("<Button-5>")
 
-# FUNCTIONALITY
+# BACKEND STUFF
 download_controller = main.DownloadController()
 
+def _validate_login(username, pw, q):
+    success = download_controller.validate_login(username, pw)
+    if not success:
+        q.put(lambda: messagebox.showerror(
+            "Login Failed",
+            "Try again. Try not to mess up many times or Scratch might flag you as a clanker."
+        ))
+        return
+    q.put(lambda: switch_to_project_select())
+
+def _get_project_list(filter_arg, q):
+    projects = download_controller.get_projects(filter_arg)
+    project_names = []
+    for project in projects:
+        project_names.append(project.title)
+    q.put(lambda: project_checklist._make_checkbuttons(project_names))
+
+# TODO: connect downloading to actual downloading code
+# TODO: code for progress bars to update based on info
+# TODO: code for progress labels to update based on info
+
+def check_queue():
+    '''
+    Checks the queue for callback functions from the backend tasks and runs it.
+    This stops the GUI from waiting and freezing the screen.
+    '''
+    try:
+        callback = q.get_nowait()
+        callback()
+    except:
+        root.after(100, check_queue)
+
+# GUI FUNCTIONS
 # Rudimentary screen switching
 def switch_to_project_select():
     login_screen.pack_forget()
@@ -113,39 +146,6 @@ def get_project_list(filter_arg):
         daemon=True
     ).start()
     check_queue()
-
-# BACKEND STUFF
-def check_queue():
-    '''
-    Checks the queue for callback functions from the backend tasks and runs it.
-    This stops the GUI from waiting and freezing the screen.
-    '''
-    try:
-        callback = q.get_nowait()
-        callback()
-    except:
-        root.after(100, check_queue)
-
-def _validate_login(username, pw, q):
-    success = download_controller.validate_login(username, pw)
-    if not success:
-        q.put(lambda: messagebox.showerror(
-            "Login Failed",
-            "Try again. Try not to mess up many times or Scratch might flag you as a clanker."
-        ))
-        return
-    q.put(lambda: switch_to_project_select())
-
-def _get_project_list(filter_arg, q):
-    projects = download_controller.get_projects(filter_arg)
-    project_names = []
-    for project in projects:
-        project_names.append(project.title)
-    q.put(lambda: project_checklist._make_checkbuttons(project_names))
-
-# TODO: connect downloading to actual downloading code
-# TODO: code for progress bars to update based on info
-# TODO: code for progress labels to update based on info
 
 # MAIN WINDOW
 root = tk.Tk()
