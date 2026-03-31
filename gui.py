@@ -147,6 +147,20 @@ def get_project_list(filter_arg):
     ).start()
     check_queue()
 
+def get_selected_projects():
+    selected = []
+    # Loop through the buttons list
+    # and the corresponding list of BooleanVars to see which are selected
+    for i in range(len(project_checklist.buttons)):
+        checked_val = project_checklist.vars[i].get()
+        if checked_val:
+            selected.append(i)
+            # For debugging: prints the selected projects' titles
+            print(project_checklist.buttons[i].cget("text"))
+
+    # Returns the indexes of the selected projects
+    return selected
+
 # MAIN WINDOW
 root = tk.Tk()
 root.title("SB3 Bulk Downloader")
