@@ -115,9 +115,13 @@ def get_project_list(filter_arg):
 
 # BACKEND STUFF
 def check_queue():
+    '''
+    Checks the queue for callback functions from the backend tasks and runs it.
+    This stops the GUI from waiting and freezing the screen.
+    '''
     try:
-        result = q.get_nowait()
-        project_checklist._make_checkbuttons(result)
+        callback = q.get_nowait()
+        callback()
     except:
         root.after(100, check_queue)
 
@@ -126,7 +130,7 @@ def _get_project_list(filter_arg, q):
     project_names = []
     for project in projects:
         project_names.append(project.title)
-    q.put(project_names)
+    q.put(lambda: project_checklist._make_checkbuttons(project_names))
 
 # TODO: connect downloading to actual downloading code
 # TODO: code for progress bars to update based on info
