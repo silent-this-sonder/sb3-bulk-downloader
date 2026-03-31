@@ -1,7 +1,11 @@
 import main
+# Tkinter imports
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
+# import threading stuff to run the backend work
+from threading import Thread
+from queue import Queue
 
 class ScrollableChecklist(tk.Frame):
     '''Create a list of checkbuttons that supports scrolling'''
@@ -99,16 +103,30 @@ def validate_login():
     switch_to_project_select()
 
 # Get project list everytime filter is reselected and show in the checklist
-def get_project_list(filter):
+def get_project_list(filter_arg):
     # Scroll the view back to the top instead of keeping current yview
     project_checklist.canvas.yview_moveto(0.0)
+    Thread(
+        target=_get_project_list,
+        args=(filter_arg, q),
+        daemon=True
+    ).start()
+    check_queue()
 
-    # TODO: use .after() instead of doing it synchronously so that the GUI doesn't freeze while waiting for projects to load
-    projects = download_controller.get_projects(filter)
+# BACKEND STUFF
+def check_queue():
+    try:
+        result = q.get_nowait()
+        project_checklist._make_checkbuttons(result)
+    except:
+        root.after(100, check_queue)
+
+def _get_project_list(filter_arg, q):
+    projects = download_controller.get_projects(filter_arg)
     project_names = []
     for project in projects:
         project_names.append(project.title)
-    project_checklist._make_checkbuttons(project_names)
+    q.put(project_names)
 
 # TODO: connect downloading to actual downloading code
 # TODO: code for progress bars to update based on info
@@ -118,6 +136,8 @@ def get_project_list(filter):
 root = tk.Tk()
 root.title("SB3 Bulk Downloader")
 root.geometry("960x720")
+
+q = Queue()
 
 # LOGIN SCREEN
 login_screen = ttk.Frame()
