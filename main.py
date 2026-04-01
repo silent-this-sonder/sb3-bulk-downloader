@@ -1,12 +1,13 @@
 import json
 import os
-import requests
-import scratchattach as s3
 import shutil
 import string
 import time as t
-import zipfile
 import traceback
+import zipfile
+
+import requests
+import scratchattach as s3
 
 # USER INPUT FUNCTIONS
 
