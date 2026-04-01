@@ -9,43 +9,6 @@ import zipfile
 import requests
 import scratchattach as s3
 
-# USER INPUT FUNCTIONS
-
-def input_scratch_login():
-    '''Log in to Scratch with user and pw; returns the Session object'''
-    while True: 
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-
-        session = None
-        if password:
-            try:
-                session = s3.login(username, password)
-                print("Login successful!")
-                return session
-            except Exception as e:
-                print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
-            else:
-                return
-
-def menu(arr):
-    '''Displays possibly non-String items in a list, asks users to select one, and returns the index of the actual object in the list'''
-    for i in range(len(arr)):
-        print("\t" + str(i) + ". " + str(arr[i]))
-        
-    choice = -1
-    while not(0 <= int(choice) <= len(arr)-1):
-        choice = input("\tEnter the index of your choice: ")
-        if not choice.isdigit():
-            print("\tInput invalid: index must be a number.")
-            choice = -1
-            continue
-        if not(0 <= int(choice) <= len(arr)-1):
-            print("\tInput invalid: index must be in range.")
-            
-    choice = int(choice)
-    return choice
-
 class DownloadController:
     def __init__(self):
         self.session = None
@@ -241,6 +204,43 @@ class DownloadController:
                 # hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm as scratch accept isnt the same it can corrupt it
         shutil.rmtree(project_dir)
         return sb3_path
+
+# USER INPUT FUNCTIONS
+
+def input_scratch_login():
+    '''Log in to Scratch with user and pw; returns the Session object'''
+    while True: 
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+
+        session = None
+        if password:
+            try:
+                session = s3.login(username, password)
+                print("Login successful!")
+                return session
+            except Exception as e:
+                print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
+            else:
+                return
+
+def menu(arr):
+    '''Displays possibly non-String items in a list, asks users to select one, and returns the index of the actual object in the list'''
+    for i in range(len(arr)):
+        print("\t" + str(i) + ". " + str(arr[i]))
+        
+    choice = -1
+    while not(0 <= int(choice) <= len(arr)-1):
+        choice = input("\tEnter the index of your choice: ")
+        if not choice.isdigit():
+            print("\tInput invalid: index must be a number.")
+            choice = -1
+            continue
+        if not(0 <= int(choice) <= len(arr)-1):
+            print("\tInput invalid: index must be in range.")
+            
+    choice = int(choice)
+    return choice
 
 # MAIN
 def cli_downloader():
