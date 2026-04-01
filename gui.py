@@ -167,6 +167,7 @@ def get_selected_projects():
     return selected
 
 def download_selected_projects():
+    switch_to_download()
     selected = get_selected_projects()
     for p_index in selected:
         Thread(
