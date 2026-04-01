@@ -189,6 +189,7 @@ class DownloadController:
         self.session = None
         self.projects = []
         self.translation_table = str.maketrans("", "", string.punctuation)
+    
     def validate_login(self, username, password):
         if not (username and password):
             return False
@@ -198,6 +199,7 @@ class DownloadController:
             return True
         except Exception as e:
             return False
+    
     def get_projects(self, filter_arg="all"):
         self.projects = []
         if filter_arg == "unshared":
@@ -213,6 +215,7 @@ class DownloadController:
                 break
             pagenum += 1
         return self.projects
+    
     def download_project(self, p_index):
         p = self.projects[p_index]
         project = self.session.connect_project(p.id)
@@ -230,9 +233,6 @@ class DownloadController:
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
         return True
-# TODO: get selected projects
-# TODO: download projects
-# TODO: update GUI
 
 # MAIN
 def cli_downloader():
