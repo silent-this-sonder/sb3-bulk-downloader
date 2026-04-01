@@ -188,6 +188,7 @@ class DownloadController:
     def __init__(self):
         self.session = None
         self.projects = []
+        self.translation_table = str.maketrans("", "", string.punctuation)
     def validate_login(self, username, password):
         if not (username and password):
             return False
@@ -212,7 +213,23 @@ class DownloadController:
                 break
             pagenum += 1
         return self.projects
+    def download_project(self, p_index):
+        p = self.projects[p_index]
+        project = self.session.connect_project(p.id)
+        jsonfile, fnc = make_filenames(p, project, self.translation_table)
 
+        # Download and zip the zb3
+        download = download_sb3(project, fnc, jsonfile)
+        if not download:
+            return False
+        project_dir = download
+        
+        sb3_path = zip_sb3(fnc, project_dir)
+        print(f"Project saved as {sb3_path}")
+
+        # sleep 3 seconds so scratch doesn't rate limit
+        t.sleep(3)
+        return True
 # TODO: get selected projects
 # TODO: download projects
 # TODO: update GUI

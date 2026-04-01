@@ -90,7 +90,12 @@ def _get_project_list(filter_arg, q):
         project_names.append(project.title)
     q.put(lambda: project_checklist._make_checkbuttons(project_names))
 
-# TODO: connect downloading to actual downloading code
+def _download_project(p_index, q):
+    download = download_controller.download_project(p_index)
+    if not download:
+        q.put(lambda: print("Download failed"))
+    q.put(lambda: print("Download successful"))
+
 # TODO: code for progress bars to update based on info
 # TODO: code for progress labels to update based on info
 
@@ -156,10 +161,20 @@ def get_selected_projects():
         if checked_val:
             selected.append(i)
             # For debugging: prints the selected projects' titles
-            print(project_checklist.buttons[i].cget("text"))
+            # print(project_checklist.buttons[i].cget("text"))
 
     # Returns the indexes of the selected projects
     return selected
+
+def download_selected_projects():
+    selected = get_selected_projects()
+    for p_index in selected:
+        Thread(
+            target=_download_project,
+            args=(p_index, q),
+            daemon=True
+        ).start()
+        check_queue()
 
 # MAIN WINDOW
 root = tk.Tk()
@@ -199,7 +214,7 @@ project_selectall_button = ttk.Button(project_select_screen, command=select_all_
 project_checklist = ScrollableChecklist(project_select_screen, [])
 download_button = ttk.Button(
     project_select_screen, text="Download Selected",
-    command=switch_to_download
+    command=download_selected_projects
 )
 
 project_label.pack()
