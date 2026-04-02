@@ -94,10 +94,7 @@ def _download_project(p_index, q):
     download = download_controller.download_project(p_index)
     if not download:
         q.put(lambda: print("Download failed"))
-    q.put(lambda: print("Download successful"))
-
-# TODO: code for progress bars to update based on info
-# TODO: code for progress labels to update based on info
+        return
 
 def check_queue():
     '''
