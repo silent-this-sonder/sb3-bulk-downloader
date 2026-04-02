@@ -90,11 +90,19 @@ def _get_project_list(filter_arg, q):
         project_names.append(project.title)
     q.put(lambda: project_checklist._make_checkbuttons(project_names))
 
-def _download_project(p_index, q):
+def _download_project(i, p_index, p_title, step_val, total_projects, q):
     download = download_controller.download_project(p_index)
     if not download:
         q.put(lambda: print("Download failed"))
         return
+    # Update progress bar of total projects downloaded
+    q.put(lambda: update_all_download_progress(i, p_title, step_val, total_projects))
+
+def update_all_download_progress(i, p_title, step_val, total_projects):
+    all_download_progress.step(step_val)
+    all_download_label.config(
+        text=f"Currently downloading {p_title}, {i + 1} / {total_projects} projects downloaded"
+    )
 
 def check_queue():
     '''
@@ -164,12 +172,21 @@ def get_selected_projects():
     return selected
 
 def download_selected_projects():
-    switch_to_download()
     selected = get_selected_projects()
-    for p_index in selected:
+    total_projects = len(selected)
+    step_val = 100 * 1 / total_projects
+
+    switch_to_download()
+    all_download_label.config(
+        text=f"0 / {total_projects} projects downloaded"
+    )
+
+    for i in range(total_projects):
+        p_index = selected[i]
+        p_title = project_checklist.buttons[p_index].cget("text")
         Thread(
             target=_download_project,
-            args=(p_index, q),
+            args=(i, p_index, p_title, step_val, total_projects, q),
             daemon=True
         ).start()
         check_queue()
