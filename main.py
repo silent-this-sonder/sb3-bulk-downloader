@@ -308,13 +308,14 @@ def cli_downloader():
             # traceback.print_exc()
             break
         pagenum += 1
-        
+    
+    download_controller.progress_bar_info["total_projects"] = len(projects)
+    download_controller.progress_bar_info["project_stepval"] = 100 / download_controller.progress_bar_info["total_projects"]
+
     for p in projects:
         # Title and newline for separation
         print("\n")
-        print(p.title)
-        project = p
-        print("Downloading...")
+        download_controller.progress_bar_info["current_project"] = p.title
 
         # Get session id and use to load project
         project = session.connect_project(p.id)
@@ -330,6 +331,8 @@ def cli_downloader():
         
         sb3_path = DownloadController.zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
+
+        download_controller.progress_bar_info["downloaded_projects"] += 1
 
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
