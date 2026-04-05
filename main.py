@@ -12,9 +12,22 @@ import scratchattach as s3
 class DownloadController:
     def __init__(self):
         self.session = None
+
         self.projects = []
+        self.progress_bar_info = {
+            "project_stepval": 0,
+            "asset_stepval": 0,
+
+            "downloaded_projects": 0,
+            "total_projects": 0,
+
+            "current_project": "",
+            "downloaded_assets": 0,
+            "total_assets": 0
+        }
+
         self.translation_table = str.maketrans("", "", string.punctuation)
-    
+
     # GUI FUNCTIONS (connect to the Tkinter window)
     def validate_login(self, username, password):
         if not (username and password):
@@ -40,6 +53,9 @@ class DownloadController:
                 # traceback.print_exc()
                 break
             pagenum += 1
+        
+        self.progress_bar_info["total_projects"] = len(self.projects)
+        self.progress_bar_info["project_stepval"] = 100 / self.progress_bar_info["total_projects"]
         return self.projects
     
     def download_project(self, p_index):
@@ -47,14 +63,20 @@ class DownloadController:
         project = self.session.connect_project(p.id)
         jsonfile, fnc = DownloadController.make_filenames(p, project, self.translation_table)
 
+        # reset progress bar
+        self.progress_bar_info["current_project"] = project.title
+        self.progress_bar_info["downloaded_assets"] = 0
+        self.progress_bar_info["total_assets"] = 0
+
         # Download and zip the zb3
-        download = DownloadController.download_sb3(project, fnc, jsonfile)
+        download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile)
         if not download:
             return False
         project_dir = download
         
         sb3_path = DownloadController.zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
+        self.progress_bar_info["downloaded_projects"] += 1
 
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
@@ -63,7 +85,7 @@ class DownloadController:
     # DOWNLOADER FUNCTIONS
 
     @staticmethod
-    def download_sb3(project, fnc, jsonfile):
+    def download_sb3(pbar_info, project, fnc, jsonfile):
         '''Download the project.json and assets from Scratch into a new directory'''
         project_dir = DownloadController.make_sb3_folder(fnc)
         try:
@@ -91,6 +113,7 @@ class DownloadController:
 
         # Process downloaded project JSON to fetch md5ext assets
         DownloadController.process_project_json(
+            pbar_info,
             os.path.join(project_dir, "project.json"),
             asset_dir=project_dir
         )
@@ -131,13 +154,15 @@ class DownloadController:
         return jsonfile, fnc
 
     @staticmethod
-    def process_project_json(project_json_path, asset_dir):
+    def process_project_json(pbar_info, project_json_path, asset_dir):
         '''Download the assets from the project.json'''
         # asset_dir is the temporary folder for the project to store assets before zipping it up 
         with open(project_json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         md5exts = DownloadController.extract_md5exts(data)
+        pbar_info["total_assets"] = len(md5exts)
+        pbar_info["asset_stepval"] = 100 / pbar_info["total_assets"]
 
         if not md5exts:
             print("\tNo md5ext assets found in project.json")
@@ -147,6 +172,7 @@ class DownloadController:
             try:
                 downloaded = DownloadController.download_md5ext(md5ext, asset_dir)
                 print(f"\tDownloaded asset {md5ext} -> {downloaded}")
+                pbar_info["downloaded_assets"] += 1
             except Exception as e:
                 print(f"\tFailed to download {md5ext}: {e}")
 
