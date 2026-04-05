@@ -273,6 +273,7 @@ def menu(arr):
 
 # MAIN
 def cli_downloader():
+    download_controller = DownloadController()
     print("SB3 BULK DOWNLOADER")
 
     # Used to clean up file names
@@ -315,7 +316,7 @@ def cli_downloader():
         jsonfile, fnc = DownloadController.make_filenames(p, project, translation_table)
 
         # Download and zip the zb3
-        download = DownloadController.download_sb3(project, fnc, jsonfile)
+        download = DownloadController.download_sb3(download_controller.progress_bar_info, project, fnc, jsonfile)
         if not download:
             continue
         project_dir = download
