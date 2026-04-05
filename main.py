@@ -91,6 +91,7 @@ class DownloadController:
     def pbar_to_string(pbar_info):
         all_progress = f"Currently downloading {pbar_info['current_project']},"
         all_progress += f" {pbar_info['downloaded_projects']} / {pbar_info['total_projects']}"
+        all_progress += " projects downloaded"
         return all_progress
 
     @staticmethod
