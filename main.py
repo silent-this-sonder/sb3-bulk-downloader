@@ -58,6 +58,9 @@ class DownloadController:
         self.progress_bar_info["project_stepval"] = 100 / self.progress_bar_info["total_projects"]
         return self.projects
     
+    def get_pbar(self, key):
+        return self.progress_bar_info[key]
+
     def download_project(self, p_index):
         p = self.projects[p_index]
         project = self.session.connect_project(p.id)
