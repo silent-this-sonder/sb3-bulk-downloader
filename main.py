@@ -88,6 +88,12 @@ class DownloadController:
     # DOWNLOADER FUNCTIONS
 
     @staticmethod
+    def pbar_to_string(pbar_info):
+        all_progress = f"Currently downloading {pbar_info['current_project']},"
+        all_progress += f" {pbar_info['downloaded_projects']} / {pbar_info['total_projects']}"
+        return all_progress
+
+    @staticmethod
     def download_sb3(pbar_info, project, fnc, jsonfile):
         '''Download the project.json and assets from Scratch into a new directory'''
         project_dir = DownloadController.make_sb3_folder(fnc)
