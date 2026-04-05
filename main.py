@@ -322,6 +322,7 @@ def cli_downloader():
         jsonfile, fnc = DownloadController.make_filenames(p, project, translation_table)
 
         # Download and zip the zb3
+        print(DownloadController.pbar_to_string(download_controller.progress_bar_info))
         download = DownloadController.download_sb3(download_controller.progress_bar_info, project, fnc, jsonfile)
         if not download:
             continue
