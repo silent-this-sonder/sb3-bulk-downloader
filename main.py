@@ -10,7 +10,15 @@ import requests
 import scratchattach as s3
 
 class DownloadController:
+    """In charge of the downloading logic.
+
+    Attributes:
+        session: A scratchattach Session object.
+        projects: A list of scratchattach Project objects.
+        progress_bar_info: A dictionary containing numerical values representing download progress.
+    """
     def __init__(self):
+        """Initializes a DownloadController object."""
         self.session = None
 
         self.projects = []
@@ -30,16 +38,30 @@ class DownloadController:
 
     # GUI FUNCTIONS (connect to the Tkinter window)
     def validate_login(self, username, password):
+        """Attempts to log into Scratch.
+        
+        Args:
+            username: A self-explanatory string.
+            password: A self-explanatory string.
+        Returns:
+            A boolean of whether or not the login was successful.
+        """
         if not (username and password):
             return False
         try:
             self.session = s3.login(username, password)
-            print("Login successful!")
             return True
         except Exception as e:
             return False
     
     def get_projects(self, filter_arg="all"):
+        """Fetches the projects from a user's My Stuff pages.
+        
+        Args:
+            filter_arg: A string that can be either "all", "shared", "unshared", or "notshared".
+        Returns:
+            A list containing all the My Stuff projects.
+        """
         self.projects = []
         if filter_arg == "unshared":
             filter_arg = "notshared"
@@ -59,9 +81,23 @@ class DownloadController:
         return self.projects
     
     def get_pbar(self, key):
+        """Getter method for accessing one of the progress bar values.
+        
+        Args:
+            key: A string that matches up with any of the progress_bar_info keys.
+        Returns:
+            The int value associated with the given key.
+        """
         return self.progress_bar_info[key]
 
     def download_project(self, p_index):
+        """Downloads a project from Scratch onto the user's device.
+        
+        Args:
+            p_index: An int corresponding to a project's index from the self.projects list.
+        Returns:
+            A boolean of whether the download was successful or not.
+        """
         p = self.projects[p_index]
         project = self.session.connect_project(p.id)
         jsonfile, fnc = DownloadController.make_filenames(p, project, self.translation_table)
@@ -70,6 +106,9 @@ class DownloadController:
         self.progress_bar_info["current_project"] = project.title
         self.progress_bar_info["downloaded_assets"] = 0
         self.progress_bar_info["total_assets"] = 0
+
+        # print the progress bar (for CLI)
+        print(DownloadController.pbar_to_string(self.progress_bar_info))
 
         # Download and zip the zb3
         download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile)
@@ -89,6 +128,13 @@ class DownloadController:
 
     @staticmethod
     def pbar_to_string(pbar_info):
+        """Turns the progress bar numerical values into a text format.
+        
+        Args:
+            pbar_info: A dictionary containing the progress bar numbers.
+        Returns:
+            A string showing the current download and the amount of finished downloads out of total projects to download.
+        """
         all_progress = f"Currently downloading {pbar_info['current_project']},"
         all_progress += f" {pbar_info['downloaded_projects']} / {pbar_info['total_projects']}"
         all_progress += " projects downloaded"
@@ -96,7 +142,16 @@ class DownloadController:
 
     @staticmethod
     def download_sb3(pbar_info, project, fnc, jsonfile):
-        '''Download the project.json and assets from Scratch into a new directory'''
+        """Downloads the project.json and assets from Scratch into a new directory.
+        
+        Args:
+            pbar_info: A dictionary containing the progress bar numerical values.
+            project: A scratchattach Project object to download.
+            fnc: A string of the filename for the downloaded sb3 file.
+            jsonfile: A string of the project.json filename.
+        Returns:
+            The path to the directory containing the project assets.
+        """
         project_dir = DownloadController.make_sb3_folder(fnc)
         try:
             project.download(
@@ -131,14 +186,28 @@ class DownloadController:
     
     @staticmethod
     def make_sb3_folder(fnc):
-        '''Make the directory for the new sb3'''
+        """Makes the directory for the new sb3.
+        
+        Args:
+            fnc: A string of the filename for the downloaded sb3 file.
+        Returns:
+            The path to the directory that will store the project assets.
+        """
         project_dir = os.path.join("downloads", fnc)
         os.makedirs(project_dir, exist_ok=True)
         return project_dir
 
     @staticmethod
     def make_filenames(p, project, translation_table):
-        '''Remove forbidden characters and return the names for the sb3 files'''
+        """Removes forbidden characters and return the names for the sb3 files.
+        
+        Args:
+            project: A string of the project's original title.
+            translation_table: A translation table to remove some forbidden characters.
+        Returns:
+            jsonfile: A string of the project's project.json filename.
+            fnc: A string of the fully cleaned-up file name.
+        """
         fn = project.title.translate(translation_table)
         jsonfile = fn + ".json"  # just name it .json because that's what it is, it's not even a real sb3
 
@@ -165,8 +234,13 @@ class DownloadController:
 
     @staticmethod
     def process_project_json(pbar_info, project_json_path, asset_dir):
-        '''Download the assets from the project.json'''
-        # asset_dir is the temporary folder for the project to store assets before zipping it up 
+        """Extracts the assets from the project.json and downloads them from Scratch.
+        
+        Args:
+            pbar_info: A dict containing the progress bar's numerical values.
+            project_json_path: The path...to the project.json??? it's not that hard.
+            asset_dir: The temporary folder for storing downloaded assets.
+        """
         with open(project_json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
@@ -188,7 +262,14 @@ class DownloadController:
 
     @staticmethod
     def extract_md5exts(node, seen=None):
-        '''Recursive function that finds and returns all the md5exts from the project.json'''
+        """Finds and returns all the md5exts from the project.json.
+        
+        Args:
+            node: A dictionary or list to search through.
+            seen: A set containing the md5exts.
+        Returns:
+            The set of all the md5exts.
+        """
         if seen is None:
             seen = set()
         if isinstance(node, dict):
@@ -203,7 +284,14 @@ class DownloadController:
 
     @staticmethod
     def download_md5ext(md5ext, out_dir):
-        '''Get the asset from Scratch and write it to a file'''
+        """Gets an asset from Scratch and writes it to a file.
+        
+        Args:
+            md5ext: A string of the md5ext to fetch.
+            out_dir: The directory to download the md5ext to.
+        Returns:
+            The path to the downloaded asset.
+        """
 
         # Set up the directory, file name, and path
         os.makedirs(out_dir, exist_ok=True)
@@ -228,7 +316,14 @@ class DownloadController:
 
     @staticmethod
     def zip_sb3(fnc, project_dir):
-        '''Zip up the completed folder with all the assets'''
+        """Zips up the completed project folder into an sb3.
+        
+        Args:
+            fnc: A string of the project's file name.
+            project_dir: The directory to zip up.
+        Returns:
+            The path to the finished sb3 file.
+        """
         sb3_filename = f"{fnc}.sb3"
         sb3_path = os.path.join("downloads", sb3_filename)
         with zipfile.ZipFile(sb3_path, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -241,104 +336,66 @@ class DownloadController:
         shutil.rmtree(project_dir)
         return sb3_path
 
-# USER INPUT FUNCTIONS
+class CLIDownloader(DownloadController):
+    """Both the view and controller for the CLI downloader."""
+    def __init__(self):
+        """Intitializes a CLIDownloader object, inheriting from the DownloadController class."""
+        super().__init__()
 
-def input_scratch_login():
-    '''Log in to Scratch with user and pw; returns the Session object'''
-    while True: 
-        username = input("Enter username: ")
-        password = input("Enter password: ")
+        print("SB3 BULK DOWNLOADER")
+        self.input_login()
 
-        session = None
-        if password:
-            try:
-                session = s3.login(username, password)
+        # Filters the projects in My Stuff
+        filter_arg = [
+            "all",
+            "shared",
+            "notshared"
+        ]
+        print("Which projects would you like to download?")
+        choice = filter_arg[self.menu(filter_arg)]
+
+        self.get_projects(choice)
+        for p_index in range(len(self.projects)):
+            print("\n")
+            self.download_project(p_index)
+            # sleep 3 seconds so scratch doesn't rate limit
+            t.sleep(3)
+
+        print(f"\n{self.progress_bar_info['downloaded_projects']} / {self.progress_bar_info['total_projects']} projects downloaded")
+
+    def input_login(self):
+        """Get and validate the user's username and password."""
+        while True: 
+            username = input("Enter username: ")
+            password = input("Enter password: ")
+            if self.validate_login(username, password):
                 print("Login successful!")
-                return session
-            except Exception as e:
-                print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
-            else:
-                return
-
-def menu(arr):
-    '''Displays possibly non-String items in a list, asks users to select one, and returns the index of the actual object in the list'''
-    for i in range(len(arr)):
-        print("\t" + str(i) + ". " + str(arr[i]))
-        
-    choice = -1
-    while not(0 <= int(choice) <= len(arr)-1):
-        choice = input("\tEnter the index of your choice: ")
-        if not choice.isdigit():
-            print("\tInput invalid: index must be a number.")
-            choice = -1
-            continue
-        if not(0 <= int(choice) <= len(arr)-1):
-            print("\tInput invalid: index must be in range.")
-            
-    choice = int(choice)
-    return choice
-
-# MAIN
-def cli_downloader():
-    download_controller = DownloadController()
-    print("SB3 BULK DOWNLOADER")
-
-    # Used to clean up file names
-    translation_table = str.maketrans("", "", string.punctuation)
-
-    # Log in to scratch
-    session = input_scratch_login()
-
-    # Filters the projects in My Stuff
-    filter_arg = [
-        "all",
-        "shared",
-        "notshared"
-    ]
-    print("Which projects would you like to download?")
-    choice = filter_arg[menu(filter_arg)]
-
-    # ACTUAL 
-    pagenum = 1
-    while True:
-        try: 
-            projects = session.mystuff_projects(choice, page=pagenum, sort_by="")
-            
-        except Exception as e:
-            # print("the thing broke here's your error:", e)
-            # traceback.print_exc()
-            break
-        pagenum += 1
+                break
+            print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
     
-    download_controller.progress_bar_info["total_projects"] = len(projects)
-    download_controller.progress_bar_info["project_stepval"] = 100 / download_controller.progress_bar_info["total_projects"]
-
-    for p in projects:
-        # Title and newline for separation
-        print("\n")
-        download_controller.progress_bar_info["current_project"] = p.title
-
-        # Get session id and use to load project
-        project = session.connect_project(p.id)
-        # Process filename
-        jsonfile, fnc = DownloadController.make_filenames(p, project, translation_table)
-
-        # Download and zip the zb3
-        print(DownloadController.pbar_to_string(download_controller.progress_bar_info))
-        download = DownloadController.download_sb3(download_controller.progress_bar_info, project, fnc, jsonfile)
-        if not download:
-            continue
-        project_dir = download
+    def menu(self, arr):
+        '''Displays items in a list for the user to choose from.
         
-        sb3_path = DownloadController.zip_sb3(fnc, project_dir)
-        print(f"Project saved as {sb3_path}")
-
-        download_controller.progress_bar_info["downloaded_projects"] += 1
-
-        # sleep 3 seconds so scratch doesn't rate limit
-        t.sleep(3)
-
-    print("\nEnd of project list. There are no more projects to download.")
+        Args:
+            arr: The list of options.
+        Returns:
+            The index of the user's choice from the list.
+        '''
+        for i in range(len(arr)):
+            print("\t" + str(i) + ". " + str(arr[i]))
+            
+        choice = -1
+        while not(0 <= int(choice) <= len(arr)-1):
+            choice = input("\tEnter the index of your choice: ")
+            if not choice.isdigit():
+                print("\tInput invalid: index must be a number.")
+                choice = -1
+                continue
+            if not(0 <= int(choice) <= len(arr)-1):
+                print("\tInput invalid: index must be in range.")
+                
+        choice = int(choice)
+        return choice
 
 if __name__ == "__main__":
-    cli_downloader()
+    cli_downloader = CLIDownloader()
