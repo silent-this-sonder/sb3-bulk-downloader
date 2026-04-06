@@ -70,6 +70,9 @@ class DownloadController:
         self.progress_bar_info["downloaded_assets"] = 0
         self.progress_bar_info["total_assets"] = 0
 
+        # print the progress bar (for CLI)
+        print(DownloadController.pbar_to_string(self.progress_bar_info))
+
         # Download and zip the zb3
         download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile)
         if not download:
