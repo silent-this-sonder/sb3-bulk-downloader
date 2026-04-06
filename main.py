@@ -243,56 +243,57 @@ class DownloadController:
         shutil.rmtree(project_dir)
         return sb3_path
 
-# USER INPUT FUNCTIONS
+class CLIDownloader(DownloadController):
+    def __init__(self):
+        super().__init__()
 
-def menu(arr):
-    '''Displays possibly non-String items in a list, asks users to select one, and returns the index of the actual object in the list'''
-    for i in range(len(arr)):
-        print("\t" + str(i) + ". " + str(arr[i]))
-        
-    choice = -1
-    while not(0 <= int(choice) <= len(arr)-1):
-        choice = input("\tEnter the index of your choice: ")
-        if not choice.isdigit():
-            print("\tInput invalid: index must be a number.")
-            choice = -1
-            continue
-        if not(0 <= int(choice) <= len(arr)-1):
-            print("\tInput invalid: index must be in range.")
+        print("SB3 BULK DOWNLOADER")
+        self.input_login()
+
+        # Filters the projects in My Stuff
+        filter_arg = [
+            "all",
+            "shared",
+            "notshared"
+        ]
+        print("Which projects would you like to download?")
+        choice = filter_arg[self.menu(filter_arg)]
+
+        self.get_projects(choice)
+        for p_index in range(len(self.projects)):
+            print("\n")
+            self.download_project(p_index)
+            # sleep 3 seconds so scratch doesn't rate limit
+            t.sleep(3)
+
+        print(f"\n{self.progress_bar_info['downloaded_projects']} / {self.progress_bar_info['total_projects']} projects downloaded")
+
+    def input_login(self):
+        while True: 
+            username = input("Enter username: ")
+            password = input("Enter password: ")
+            if self.validate_login(username, password):
+                print("Login successful!")
+                break
+            print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
+    
+    def menu(self, arr):
+        '''Displays possibly non-String items in a list, asks users to select one, and returns the index of the actual object in the list'''
+        for i in range(len(arr)):
+            print("\t" + str(i) + ". " + str(arr[i]))
             
-    choice = int(choice)
-    return choice
-
-# MAIN
-def cli_downloader():
-    print("SB3 BULK DOWNLOADER")
-    dc = DownloadController()
-
-    while True: 
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-        if dc.validate_login(username, password):
-            print("Login successful!")
-            break
-        print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
-
-    # Filters the projects in My Stuff
-    filter_arg = [
-        "all",
-        "shared",
-        "notshared"
-    ]
-    print("Which projects would you like to download?")
-    choice = filter_arg[menu(filter_arg)]
-
-    dc.get_projects(choice)
-    for p_index in range(len(dc.projects)):
-        print("\n")
-        dc.download_project(p_index)
-        # sleep 3 seconds so scratch doesn't rate limit
-        t.sleep(3)
-
-    print(f"\n{dc.progress_bar_info['downloaded_projects']} / {dc.progress_bar_info['total_projects']} projects downloaded")
+        choice = -1
+        while not(0 <= int(choice) <= len(arr)-1):
+            choice = input("\tEnter the index of your choice: ")
+            if not choice.isdigit():
+                print("\tInput invalid: index must be a number.")
+                choice = -1
+                continue
+            if not(0 <= int(choice) <= len(arr)-1):
+                print("\tInput invalid: index must be in range.")
+                
+        choice = int(choice)
+        return choice
 
 if __name__ == "__main__":
-    cli_downloader()
+    cli_downloader = CLIDownloader()
