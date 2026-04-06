@@ -262,7 +262,6 @@ def menu(arr):
 
 # MAIN
 def cli_downloader():
-    download_controller = DownloadController()
     print("SB3 BULK DOWNLOADER")
     dc = DownloadController()
 
@@ -290,16 +289,16 @@ def cli_downloader():
     for p in dc.projects:
         # Title and newline for separation
         print("\n")
-        download_controller.progress_bar_info["current_project"] = p.title
+        dc.progress_bar_info["current_project"] = p.title
 
         # Get session id and use to load project
-        project = session.connect_project(p.id)
+        project = dc.session.connect_project(p.id)
         # Process filename
-        jsonfile, fnc = DownloadController.make_filenames(p, project, translation_table)
+        jsonfile, fnc = DownloadController.make_filenames(p, project, dc.translation_table)
 
         # Download and zip the zb3
-        print(DownloadController.pbar_to_string(download_controller.progress_bar_info))
-        download = DownloadController.download_sb3(download_controller.progress_bar_info, project, fnc, jsonfile)
+        print(DownloadController.pbar_to_string(dc.progress_bar_info))
+        download = DownloadController.download_sb3(dc.progress_bar_info, project, fnc, jsonfile)
         if not download:
             continue
         project_dir = download
@@ -307,7 +306,7 @@ def cli_downloader():
         sb3_path = DownloadController.zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
 
-        download_controller.progress_bar_info["downloaded_projects"] += 1
+        dc.progress_bar_info["downloaded_projects"] += 1
 
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
