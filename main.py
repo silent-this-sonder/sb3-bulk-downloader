@@ -283,22 +283,11 @@ def cli_downloader():
     print("Which projects would you like to download?")
     choice = filter_arg[menu(filter_arg)]
 
-    # ACTUAL 
-    pagenum = 1
-    while True:
-        try: 
-            projects = session.mystuff_projects(choice, page=pagenum, sort_by="")
-            
-        except Exception as e:
-            # print("the thing broke here's your error:", e)
-            # traceback.print_exc()
-            break
-        pagenum += 1
-    
-    download_controller.progress_bar_info["total_projects"] = len(projects)
-    download_controller.progress_bar_info["project_stepval"] = 100 / download_controller.progress_bar_info["total_projects"]
+    dc.get_projects(choice)
+    dc.progress_bar_info["total_projects"] = len(dc.projects)
+    dc.progress_bar_info["project_stepval"] = 100 / dc.progress_bar_info["total_projects"]
 
-    for p in projects:
+    for p in dc.projects:
         # Title and newline for separation
         print("\n")
         download_controller.progress_bar_info["current_project"] = p.title
