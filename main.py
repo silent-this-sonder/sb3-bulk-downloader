@@ -292,7 +292,7 @@ def cli_downloader():
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
 
-    print("\nEnd of project list. There are no more projects to download.")
+    print(f"\n{dc.progress_bar_info['downloaded_projects']} / {dc.progress_bar_info['total_projects']} projects downloaded")
 
 if __name__ == "__main__":
     cli_downloader()
