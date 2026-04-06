@@ -34,7 +34,6 @@ class DownloadController:
             return False
         try:
             self.session = s3.login(username, password)
-            print("Login successful!")
             return True
         except Exception as e:
             return False
@@ -243,23 +242,6 @@ class DownloadController:
 
 # USER INPUT FUNCTIONS
 
-def input_scratch_login():
-    '''Log in to Scratch with user and pw; returns the Session object'''
-    while True: 
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-
-        session = None
-        if password:
-            try:
-                session = s3.login(username, password)
-                print("Login successful!")
-                return session
-            except Exception as e:
-                print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
-            else:
-                return
-
 def menu(arr):
     '''Displays possibly non-String items in a list, asks users to select one, and returns the index of the actual object in the list'''
     for i in range(len(arr)):
@@ -282,12 +264,15 @@ def menu(arr):
 def cli_downloader():
     download_controller = DownloadController()
     print("SB3 BULK DOWNLOADER")
+    dc = DownloadController()
 
-    # Used to clean up file names
-    translation_table = str.maketrans("", "", string.punctuation)
-
-    # Log in to scratch
-    session = input_scratch_login()
+    while True: 
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+        if dc.validate_login(username, password):
+            print("Login successful!")
+            break
+        print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
 
     # Filters the projects in My Stuff
     filter_arg = [
