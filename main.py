@@ -283,31 +283,9 @@ def cli_downloader():
     choice = filter_arg[menu(filter_arg)]
 
     dc.get_projects(choice)
-    dc.progress_bar_info["total_projects"] = len(dc.projects)
-    dc.progress_bar_info["project_stepval"] = 100 / dc.progress_bar_info["total_projects"]
-
-    for p in dc.projects:
-        # Title and newline for separation
+    for p_index in range(len(dc.projects)):
         print("\n")
-        dc.progress_bar_info["current_project"] = p.title
-
-        # Get session id and use to load project
-        project = dc.session.connect_project(p.id)
-        # Process filename
-        jsonfile, fnc = DownloadController.make_filenames(p, project, dc.translation_table)
-
-        # Download and zip the zb3
-        print(DownloadController.pbar_to_string(dc.progress_bar_info))
-        download = DownloadController.download_sb3(dc.progress_bar_info, project, fnc, jsonfile)
-        if not download:
-            continue
-        project_dir = download
-        
-        sb3_path = DownloadController.zip_sb3(fnc, project_dir)
-        print(f"Project saved as {sb3_path}")
-
-        dc.progress_bar_info["downloaded_projects"] += 1
-
+        dc.download_project(p_index)
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
 
