@@ -8,25 +8,10 @@ from tkinter import ttk
 from threading import Thread
 from queue import Queue
 
-class ScrollableChecklist(ctk.CTkFrame):
+class ScrollableChecklist(ctk.CTkScrollableFrame):
     '''Create a list of checkbuttons that supports scrolling'''
     def __init__(self, master, items, **kwargs):
         super().__init__(master, **kwargs)
-        self.canvas = tk.Canvas(self)
-        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.frame = ttk.Frame(self.canvas)
-        
-        self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-        self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        
-        self.scrollbar.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
-
-        # Bind mousewheel scrolling only when mouse is over the widget
-        self.canvas.bind("<Enter>", self._bind_mousewheel)
-        self.canvas.bind("<Leave>", self._unbind_mousewheel)
-        
         self.items = items
         self.buttons = []
         # Populate with checkbuttons
@@ -44,32 +29,9 @@ class ScrollableChecklist(ctk.CTkFrame):
         for i in range(len(self.items)):
             item = self.items[i]
             self.vars.append(tk.BooleanVar(value=False))
-            cb = ctk.CTkCheckBox(self.frame, text=item, variable=self.vars[i])
+            cb = ctk.CTkCheckBox(self, text=item, variable=self.vars[i])
             self.buttons.append(cb)
             cb.pack(anchor="w")
-    
-    def _on_mousewheel(self, event):
-        if event.num == 4:
-            self.canvas.yview_scroll(-1, "units")
-        elif event.num == 5:
-            self.canvas.yview_scroll(1, "units")
-        else:
-            # Windows: delta is multiple of 120; macOS: delta is ±1 or more
-            if abs(event.delta) >= 120:
-                delta = int(-1 * (event.delta / 120))
-            else:
-                delta = -1 * event.delta
-            self.canvas.yview_scroll(delta, "units")
-
-    def _bind_mousewheel(self, event):
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-        self.canvas.bind_all("<Button-4>", self._on_mousewheel)
-        self.canvas.bind_all("<Button-5>", self._on_mousewheel)
-
-    def _unbind_mousewheel(self, event):
-        self.canvas.unbind_all("<MouseWheel>")
-        self.canvas.unbind_all("<Button-4>")
-        self.canvas.unbind_all("<Button-5>")
 
 # BACKEND STUFF
 download_controller = main.DownloadController()
@@ -144,7 +106,7 @@ def validate_login():
 # Get project list everytime filter is reselected and show in the checklist
 def get_project_list(filter_arg):
     # Scroll the view back to the top instead of keeping current yview
-    project_checklist.canvas.yview_moveto(0.0)
+    project_checklist._parent_canvas.yview_moveto(0)
     Thread(
         target=_get_project_list,
         args=(filter_arg, q),
