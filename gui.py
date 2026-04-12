@@ -53,140 +53,23 @@ class CTkMessagebox(ctk.CTkToplevel):
         self.grab_set()
         self.master.wait_window(self)
 
-# BACKEND STUFF
-download_controller = DownloadController()
-
-def _validate_login(username, pw, q):
-    success = download_controller.validate_login(username, pw)
-    if not success:
-        q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
-        return
-    q.put(lambda: switch_to_project_select())
-
-def _get_project_list(filter_arg, q):
-    projects = download_controller.get_projects(filter_arg)
-    project_names = []
-    for project in projects:
-        project_names.append(project.title)
-    q.put(lambda: project_checklist._make_checkbuttons(project_names))
-
-def _download_project(p_index, q):
-    download = download_controller.download_project(p_index)
-    if not download:
-        q.put(lambda: print("Download failed"))
-        return
-    # Update progress bar of total projects downloaded
-    q.put(lambda: print("Download successful"))
-
-def check_queue():
-    '''
-    Checks the queue for callback functions from the backend tasks and runs it.
-    This stops the GUI from waiting and freezing the screen.
-    '''
-    try:
-        callback = q.get_nowait()
-        callback()
-    except:
-        root.after(100, check_queue)
-
-# GUI FUNCTIONS
-# Rudimentary screen switching
-def switch_to_project_select():
-    login_screen.pack_forget()
-    project_select_screen.pack()
-
-def switch_to_download():
-    project_select_screen.pack_forget()
-    download_screen.pack()
-
-# Select all the projects in the list
-def select_all_projects():
-    for buttonvar in project_checklist.vars:
-        buttonvar.set(True)
-    project_selectall_button.configure(text="Deselect all", command=deselect_all_projects)
-
-# Deselect the projects in the list
-def deselect_all_projects():
-    for buttonvar in project_checklist.vars:
-        buttonvar.set(False)
-    project_selectall_button.configure(text="Select all", command=select_all_projects)
-
-# Login validation
-def validate_login():
-    Thread(
-        target=_validate_login,
-        args=(user_entry.get(), pw_entry.get(),q),
-        daemon=True
-    ).start()
-    check_queue()
-
-# Get project list everytime filter is reselected and show in the checklist
-def get_project_list(filter_arg):
-    # Scroll the view back to the top instead of keeping current yview
-    project_checklist._parent_canvas.yview_moveto(0)
-    Thread(
-        target=_get_project_list,
-        args=(filter_arg, q),
-        daemon=True
-    ).start()
-    check_queue()
-
-def get_selected_projects():
-    selected = []
-    # Loop through the buttons list
-    # and the corresponding list of BooleanVars to see which are selected
-    for i in range(len(project_checklist.buttons)):
-        checked_val = project_checklist.vars[i].get()
-        if checked_val:
-            selected.append(i)
-            # For debugging: prints the selected projects' titles
-            # print(project_checklist.buttons[i].cget("text"))
-
-    # Returns the indexes of the selected projects
-    return selected
-
-def download_selected_projects():
-    selected = get_selected_projects()
-    total_projects = len(selected)
-    step_val = 100 * 1 / total_projects
-
-    switch_to_download()
-    all_download_label.configure(
-        text=f"0 / {total_projects} projects downloaded"
-    )
-
-    for i in range(total_projects):
-        p_index = selected[i]
-        Thread(
-            target=_download_project,
-            args=(p_index, q),
-            daemon=True
-        ).start()
-        check_queue()
-
-# MAIN WINDOW
-root = ctk.CTk()
-root.title("SB3 Bulk Downloader")
-root.geometry("960x720")
-
-q = Queue()
-
-# LOGIN SCREEN
-login_screen = ttk.Frame()
-user_label = ctk.CTkLabel(login_screen, text="Username:")
-user_entry = ctk.CTkEntry(login_screen)
-pw_label = ctk.CTkLabel(login_screen, text="Password:")
-pw_entry = ctk.CTkEntry(login_screen, show="*")
-login_button = ctk.CTkButton(
-    login_screen, text="Login",
-    command=validate_login
-)
-
-user_label.pack(pady=5)
-user_entry.pack(pady=5)
-pw_label.pack(pady=5)
-pw_entry.pack(pady=5)
-login_button.pack(pady=10)
+# SCREENS
+class LoginScreen(ttk.Frame):
+    def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
+        super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+        self.user_label = ctk.CTkLabel(self.login_screen, text="Username:")
+        self.user_entry = ctk.CTkEntry(self.login_screen)
+        self.pw_label = ctk.CTkLabel(self.login_screen, text="Password:")
+        self.pw_entry = ctk.CTkEntry(self.login_screen, show="*")
+        self.login_button = ctk.CTkButton(
+            self.login_screen, text="Login",
+            command=validate_login
+        )
+        self.user_label.pack(pady=5)
+        self.user_entry.pack(pady=5)
+        self.pw_label.pack(pady=5)
+        self.pw_entry.pack(pady=5)
+        self.login_button.pack(pady=10)
 
 # PROJECT SELECT
 project_select_screen = ttk.Frame()
