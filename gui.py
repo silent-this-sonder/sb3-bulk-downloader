@@ -86,13 +86,13 @@ def switch_to_download():
 def select_all_projects():
     for buttonvar in project_checklist.vars:
         buttonvar.set(True)
-    project_selectall_button.config(text="Deselect all", command=deselect_all_projects)
+    project_selectall_button.configure(text="Deselect all", command=deselect_all_projects)
 
 # Deselect the projects in the list
 def deselect_all_projects():
     for buttonvar in project_checklist.vars:
         buttonvar.set(False)
-    project_selectall_button.config(text="Select all", command=select_all_projects)
+    project_selectall_button.configure(text="Select all", command=select_all_projects)
 
 # Login validation
 def validate_login():
@@ -173,17 +173,17 @@ login_button.pack(pady=10)
 
 # PROJECT SELECT
 project_select_screen = ttk.Frame()
-project_opts = ["Select an option", "all", "shared", "unshared"]
-project_label = ttk.Label(project_select_screen, text="Projects to Download")
+project_opts = ["all", "shared", "unshared"]
+project_label = ctk.CTkLabel(project_select_screen, text="Projects to Download")
 
 project_filtervar = tk.StringVar(value="Select an option")
-project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
+project_optmenu = ctk.CTkOptionMenu(project_select_screen, variable=project_filtervar, values=project_opts)
 project_filtervar.trace_add("write", lambda *args: get_project_list(project_filtervar.get()))
 
-project_selectall_button = ttk.Button(project_select_screen, command=select_all_projects, text="Select all")
+project_selectall_button = ctk.CTkButton(project_select_screen, command=select_all_projects, text="Select all")
 
 project_checklist = ScrollableChecklist(project_select_screen, [])
-download_button = ttk.Button(
+download_button = ctk.CTkButton(
     project_select_screen, text="Download Selected",
     command=download_selected_projects
 )
