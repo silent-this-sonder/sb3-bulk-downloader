@@ -134,7 +134,7 @@ def download_selected_projects():
     step_val = 100 * 1 / total_projects
 
     switch_to_download()
-    all_download_label.config(
+    all_download_label.configure(
         text=f"0 / {total_projects} projects downloaded"
     )
 
@@ -196,20 +196,21 @@ download_button.pack()
 
 # DOWNLOADING SCREEN
 download_screen = ttk.Frame()
+# TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
 # progress bar for current project
-cur_download_progress = ttk.Progressbar(
-    download_screen, orient="horizontal", length=500, mode="determinate"
+cur_download_progress = ctk.CTkProgressBar(
+    download_screen, orientation="horizontal", width=500
 )
 # progress bar for all projects
-all_download_progress = ttk.Progressbar(
-    download_screen, orient="horizontal", length=500, mode="determinate"
+all_download_progress = ctk.CTkProgressBar(
+    download_screen, orientation="horizontal", width=500
 )
 # labels for progress
-cur_download_label = ttk.Label(
+cur_download_label = ctk.CTkLabel(
     download_screen,
     text="Currently downloading [asset title], [num] / [total] assets downloaded"
 )
-all_download_label = ttk.Label(
+all_download_label = ctk.CTkLabel(
     download_screen,
     text="Currently downloading [project title], [num] / [total] projects downloaded"
 )
