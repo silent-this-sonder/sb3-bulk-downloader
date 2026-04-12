@@ -8,7 +8,7 @@ from tkinter import ttk
 from threading import Thread
 from queue import Queue
 
-class ScrollableChecklist(tk.Frame):
+class ScrollableChecklist(ctk.CTkFrame):
     '''Create a list of checkbuttons that supports scrolling'''
     def __init__(self, master, items, **kwargs):
         super().__init__(master, **kwargs)
@@ -44,7 +44,7 @@ class ScrollableChecklist(tk.Frame):
         for i in range(len(self.items)):
             item = self.items[i]
             self.vars.append(tk.BooleanVar(value=False))
-            cb = ttk.Checkbutton(self.frame, text=item, variable=self.vars[i])
+            cb = ctk.CTkCheckBox(self.frame, text=item, variable=self.vars[i])
             self.buttons.append(cb)
             cb.pack(anchor="w")
     
@@ -186,7 +186,7 @@ def download_selected_projects():
         check_queue()
 
 # MAIN WINDOW
-root = tk.Tk()
+root = ctk.CTk()
 root.title("SB3 Bulk Downloader")
 root.geometry("960x720")
 
@@ -194,24 +194,20 @@ q = Queue()
 
 # LOGIN SCREEN
 login_screen = ttk.Frame()
-login_screen.grid_rowconfigure(0, weight=1)
-login_screen.grid_columnconfigure(0, weight=1)
-login_screen.grid(row=0, column=0, sticky="nsew")
-
-user_label = ttk.Label(login_screen, text="Username:")
-user_entry = ttk.Entry(login_screen)
-pw_label = ttk.Label(login_screen, text="Password:")
-pw_entry = ttk.Entry(login_screen, show="*")
-login_button = ttk.Button(
+user_label = ctk.CTkLabel(login_screen, text="Username:")
+user_entry = ctk.CTkEntry(login_screen)
+pw_label = ctk.CTkLabel(login_screen, text="Password:")
+pw_entry = ctk.CTkEntry(login_screen, show="*")
+login_button = ctk.CTkButton(
     login_screen, text="Login",
     command=validate_login
 )
 
-user_label.grid(row=0, column=0)
-user_entry.grid(row=1, column=0)
-pw_label.grid(row=2, column=0)
-pw_entry.grid(row=3, column=0)
-login_button.grid(row=4, column=0)
+user_label.pack(pady=5)
+user_entry.pack(pady=5)
+pw_label.pack(pady=5)
+pw_entry.pack(pady=5)
+login_button.pack(pady=10)
 
 # PROJECT SELECT
 project_select_screen = ttk.Frame()
