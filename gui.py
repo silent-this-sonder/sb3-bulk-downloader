@@ -1,11 +1,11 @@
-import main
-# Tkinter imports
-import customtkinter as ctk
+from threading import Thread
 import tkinter as tk
 from tkinter import ttk
-# import threading stuff to run the backend work
-from threading import Thread
 from queue import Queue
+
+import customtkinter as ctk
+
+from main import DownloadController
 
 class ScrollableChecklist(ctk.CTkScrollableFrame):
     '''Create a list of checkbuttons that supports scrolling'''
@@ -54,7 +54,7 @@ class CTkMessagebox(ctk.CTkToplevel):
         self.master.wait_window(self)
 
 # BACKEND STUFF
-download_controller = main.DownloadController()
+download_controller = DownloadController()
 
 def _validate_login(username, pw, q):
     success = download_controller.validate_login(username, pw)
