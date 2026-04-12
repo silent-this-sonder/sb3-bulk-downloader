@@ -2,7 +2,6 @@ import main
 # Tkinter imports
 import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox
 from tkinter import ttk
 # import threading stuff to run the backend work
 from threading import Thread
@@ -33,16 +32,34 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
             self.buttons.append(cb)
             cb.pack(anchor="w")
 
+class CTkMessagebox(ctk.CTkToplevel):
+    def __init__(self, master : ctk.CTk, title, desc, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+        self.master = master
+
+        x = master.winfo_x() + (master.winfo_width() // 2) - (300 // 2)
+        y = master.winfo_y() + (master.winfo_height() // 2) - (200 // 2)
+        self.geometry(f"300x200+{x}+{y}")
+        self.resizable(False, False)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
+        self.title(title)
+        self.label = ctk.CTkLabel(self, text=desc, wraplength=250)
+        self.button = ctk.CTkButton(self, text="OK", command=self.destroy)
+        self.label.grid(row=0, column=0)
+        self.button.grid(row=1, column=0)
+
+        self.grab_set()
+        self.master.wait_window(self)
+
 # BACKEND STUFF
 download_controller = main.DownloadController()
 
 def _validate_login(username, pw, q):
     success = download_controller.validate_login(username, pw)
     if not success:
-        q.put(lambda: messagebox.showerror(
-            "Login Failed",
-            "Try again. Try not to mess up many times or Scratch might flag you as a clanker."
-        ))
+        q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
         return
     q.put(lambda: switch_to_project_select())
 
