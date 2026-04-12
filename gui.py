@@ -71,10 +71,29 @@ class LoginScreen(ttk.Frame):
         self.pw_entry.pack(pady=5)
         self.login_button.pack(pady=10)
 
-# PROJECT SELECT
-project_select_screen = ttk.Frame()
-project_opts = ["all", "shared", "unshared"]
-project_label = ctk.CTkLabel(project_select_screen, text="Projects to Download")
+class ProjectSelectScreen(ttk.Frame):
+    def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
+        super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+        self.project_opts = ["all", "shared", "unshared"]
+        self.project_label = ctk.CTkLabel(self.project_select_screen, text="Projects to Download")
+
+        self.project_filtervar = tk.StringVar(value="Select an option")
+        self.project_optmenu = ctk.CTkOptionMenu(self.project_select_screen, variable=self.project_filtervar, values=self.project_opts)
+        self.project_filtervar.trace_add("write", lambda *args: get_project_list(self.project_filtervar.get()))
+
+        self.project_selectall_button = ctk.CTkButton(self.project_select_screen, command=select_all_projects, text="Select all")
+
+        self.project_checklist = ScrollableChecklist(self.project_select_screen, [])
+        self.download_button = ctk.CTkButton(
+            self.project_select_screen, text="Download Selected",
+            command=download_selected_projects
+        )
+
+        self.project_label.pack()
+        self.project_optmenu.pack()
+        self.project_selectall_button.pack()
+        self.project_checklist.pack(fill="y", expand=True)
+        self.download_button.pack()
 
 project_filtervar = tk.StringVar(value="Select an option")
 project_optmenu = ctk.CTkOptionMenu(project_select_screen, variable=project_filtervar, values=project_opts)
