@@ -95,49 +95,31 @@ class ProjectSelectScreen(ttk.Frame):
         self.project_checklist.pack(fill="y", expand=True)
         self.download_button.pack()
 
-project_filtervar = tk.StringVar(value="Select an option")
-project_optmenu = ctk.CTkOptionMenu(project_select_screen, variable=project_filtervar, values=project_opts)
-project_filtervar.trace_add("write", lambda *args: get_project_list(project_filtervar.get()))
-
-project_selectall_button = ctk.CTkButton(project_select_screen, command=select_all_projects, text="Select all")
-
-project_checklist = ScrollableChecklist(project_select_screen, [])
-download_button = ctk.CTkButton(
-    project_select_screen, text="Download Selected",
-    command=download_selected_projects
-)
-
-project_label.pack()
-project_optmenu.pack()
-project_selectall_button.pack()
-project_checklist.pack(fill="y", expand=True)
-download_button.pack()
-
-# DOWNLOADING SCREEN
-download_screen = ttk.Frame()
-# TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
-# progress bar for current project
-cur_download_progress = ctk.CTkProgressBar(
-    download_screen, orientation="horizontal", width=500
-)
-# progress bar for all projects
-all_download_progress = ctk.CTkProgressBar(
-    download_screen, orientation="horizontal", width=500
-)
-# labels for progress
-cur_download_label = ctk.CTkLabel(
-    download_screen,
-    text="Currently downloading [asset title], [num] / [total] assets downloaded"
-)
-all_download_label = ctk.CTkLabel(
-    download_screen,
-    text="Currently downloading [project title], [num] / [total] projects downloaded"
-)
-
-cur_download_progress.pack()
-cur_download_label.pack()
-all_download_progress.pack()
-all_download_label.pack()
+class DownloadScreen(ttk.Frame):
+    def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
+        super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+        # TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
+        # progress bar for current project
+        self.cur_download_progress = ctk.CTkProgressBar(
+            self, orientation="horizontal", width=500
+        )
+        # progress bar for all projects
+        self.all_download_progress = ctk.CTkProgressBar(
+            self, orientation="horizontal", width=500
+        )
+        # labels for progress
+        self.cur_download_label = ctk.CTkLabel(
+            self,
+            text="Currently downloading [asset title], [num] / [total] assets downloaded"
+        )
+        self.all_download_label = ctk.CTkLabel(
+            self,
+            text="Currently downloading [project title], [num] / [total] projects downloaded"
+        )
+        self.cur_download_progress.pack()
+        self.cur_download_label.pack()
+        self.all_download_progress.pack()
+        self.all_download_label.pack()
 
 # GEOMETRY MANAGER
 login_screen.pack()
