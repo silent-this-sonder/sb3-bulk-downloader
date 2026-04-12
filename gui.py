@@ -193,6 +193,10 @@ q = Queue()
 
 # LOGIN SCREEN
 login_screen = ttk.Frame()
+login_screen.grid_rowconfigure(0, weight=1)
+login_screen.grid_columnconfigure(0, weight=1)
+login_screen.grid(row=0, column=0, sticky="nsew")
+
 user_label = ttk.Label(login_screen, text="Username:")
 user_entry = ttk.Entry(login_screen)
 pw_label = ttk.Label(login_screen, text="Password:")
@@ -202,11 +206,11 @@ login_button = ttk.Button(
     command=validate_login
 )
 
-user_label.pack(pady=5)
-user_entry.pack(pady=5)
-pw_label.pack(pady=5)
-pw_entry.pack(pady=5)
-login_button.pack(pady=10)
+user_label.grid(row=0, column=0)
+user_entry.grid(row=1, column=0)
+pw_label.grid(row=2, column=0)
+pw_entry.grid(row=3, column=0)
+login_button.grid(row=4, column=0)
 
 # PROJECT SELECT
 project_select_screen = ttk.Frame()
