@@ -55,7 +55,7 @@ class CTkMessagebox(ctk.CTkToplevel):
         self.master.wait_window(self)
 
 # SCREENS
-def check_queue(root, q):
+def check_queue(root : ctk.CTk, q : Queue):
     '''
     Checks the queue for callback functions from the backend tasks and runs it.
     This stops the GUI from waiting and freezing the screen.
@@ -97,7 +97,7 @@ class ProjectSelectScreen(ttk.Frame):
         self.project_optmenu = ctk.CTkOptionMenu(self.project_select_screen, variable=self.project_filtervar, values=self.project_opts)
         self.project_filtervar.trace_add("write", lambda *args: get_project_list(self.project_filtervar.get()))
 
-        self.project_selectall_button = ctk.CTkButton(self.project_select_screen, command=select_all_projects, text="Select all")
+        self.project_selectall_button = ctk.CTkButton(self.project_select_screen, command=self.select_all_projects, text="Select all")
 
         self.project_checklist = ScrollableChecklist(self.project_select_screen, [])
         self.download_button = ctk.CTkButton(
@@ -110,6 +110,18 @@ class ProjectSelectScreen(ttk.Frame):
         self.project_selectall_button.pack()
         self.project_checklist.pack(fill="y", expand=True)
         self.download_button.pack()
+
+    # Select all the projects in the list
+    def select_all_projects(self):
+        for buttonvar in self.project_checklist.vars:
+            buttonvar.set(True)
+        self.project_selectall_button.configure(text="Deselect all", command=self.deselect_all_projects)
+
+    # Deselect the projects in the list
+    def deselect_all_projects(self):
+        for buttonvar in self.project_checklist.vars:
+            buttonvar.set(False)
+        self.project_selectall_button.configure(text="Select all", command=self.select_all_projects)
 
 class DownloadScreen(ttk.Frame):
     def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
@@ -139,8 +151,49 @@ class DownloadScreen(ttk.Frame):
         self.all_download_progress.pack()
         self.all_download_label.pack()
 
-# GEOMETRY MANAGER
-login_screen.pack()
+# GUI APP
+class AppGUI(ctk.CTk):
+    def __init__(self, fg_color = None, **kwargs):
+        super().__init__(fg_color, **kwargs)
+        self.title("SB3 Bulk Downloader")
+        self.geometry("960x720")
 
-# APPLICATION EVENT LOOP
+        self.download_controller = DownloadController()
+        self.q = Queue()
+
+        self.login_screen = LoginScreen(self.q)
+        self.project_select_screen = ProjectSelectScreen(self.q)
+        self.download_screen = DownloadScreen(self.q)
+
+        self.current_screen = self.login_screen
+        self.current_screen.pack()
+
+    def _switch_screen(self, new_screen : ttk.Frame):
+        self.current_screen.pack_forget()
+        self.current_screen = new_screen
+        new_screen.pack()
+
+    def _validate_login(self, username, pw, q):
+        success = self.download_controller.validate_login(username, pw)
+        if not success:
+            q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
+            return
+        q.put(lambda: self._switch_screen(self.project_select_screen))
+
+    def _get_project_list(self, filter_arg, q):
+        projects = self.download_controller.get_projects(filter_arg)
+        project_names = []
+        for project in projects:
+            project_names.append(project.title)
+        q.put(lambda: self.project_select_screen.project_checklist.make_checkbuttons(project_names))
+
+    def _download_project(self, p_index, q):
+        download = self.download_controller.download_project(p_index)
+        if not download:
+            q.put(lambda: print("Download failed"))
+            return
+        # Update progress bar of total projects downloaded
+        q.put(lambda: print("Download successful"))
+
+root = AppGUI()
 root.mainloop()
