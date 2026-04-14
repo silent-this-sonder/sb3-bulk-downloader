@@ -77,13 +77,23 @@ class LoginScreen(ttk.Frame):
         self.pw_entry = ctk.CTkEntry(self.login_screen, show="*")
         self.login_button = ctk.CTkButton(
             self.login_screen, text="Login",
-            command=validate_login
+            command=self.validate_login
         )
         self.user_label.pack(pady=5)
         self.user_entry.pack(pady=5)
         self.pw_label.pack(pady=5)
         self.pw_entry.pack(pady=5)
         self.login_button.pack(pady=10)
+
+    def validate_login(self):
+        if self.master == None:
+            return
+        Thread(
+            target=self.master._validate_login,
+            args=(self.user_entry.get(), self.pw_entry.get()),
+            daemon=True
+        ).start()
+        check_queue(self.master, self.q)
 
 class ProjectSelectScreen(ttk.Frame):
     def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
