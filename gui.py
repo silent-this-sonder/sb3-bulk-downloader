@@ -54,6 +54,17 @@ class CTkMessagebox(ctk.CTkToplevel):
         self.master.wait_window(self)
 
 # SCREENS
+def check_queue(root, q):
+    '''
+    Checks the queue for callback functions from the backend tasks and runs it.
+    This stops the GUI from waiting and freezing the screen.
+    '''
+    try:
+        callback = q.get_nowait()
+        callback()
+    except:
+        root.after(100, check_queue)
+
 class LoginScreen(ttk.Frame):
     def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
         super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
