@@ -105,14 +105,14 @@ class ProjectSelectScreen(ttk.Frame):
 
         self.project_filtervar = tk.StringVar(value="Select an option")
         self.project_optmenu = ctk.CTkOptionMenu(self.project_select_screen, variable=self.project_filtervar, values=self.project_opts)
-        self.project_filtervar.trace_add("write", lambda *args: get_project_list(self.project_filtervar.get()))
+        self.project_filtervar.trace_add("write", lambda *args: self.get_project_list(self.project_filtervar.get()))
 
         self.project_selectall_button = ctk.CTkButton(self.project_select_screen, command=self.select_all_projects, text="Select all")
 
         self.project_checklist = ScrollableChecklist(self.project_select_screen, [])
         self.download_button = ctk.CTkButton(
             self.project_select_screen, text="Download Selected",
-            command=download_selected_projects
+            command=self.download_selected_projects
         )
 
         self.project_label.pack()
@@ -132,6 +132,55 @@ class ProjectSelectScreen(ttk.Frame):
         for buttonvar in self.project_checklist.vars:
             buttonvar.set(False)
         self.project_selectall_button.configure(text="Select all", command=self.select_all_projects)
+
+    def download_selected_projects(self):
+        if self.master == None:
+            return
+        
+        selected = self.get_selected_projects()
+        total_projects = len(selected)
+        step_val = 100 * 1 / total_projects
+
+        self.master.switch_screen(self.master.download_screen)
+        self.all_download_label.configure(
+            text=f"0 / {total_projects} projects downloaded"
+        )
+
+        for i in range(total_projects):
+            p_index = selected[i]
+            Thread(
+                target=self.master._download_project,
+                args=(p_index),
+                daemon=True
+            ).start()
+            check_queue(self.master, self.q)
+
+    def get_selected_projects(self):
+        selected = []
+        # Loop through the buttons list
+        # and the corresponding list of BooleanVars to see which are selected
+        for i in range(len(self.project_checklist.buttons)):
+            checked_val = self.project_checklist.vars[i].get()
+            if checked_val:
+                selected.append(i)
+                # For debugging: prints the selected projects' titles
+                # print(project_checklist.buttons[i].cget("text"))
+
+        # Returns the indexes of the selected projects
+        return selected
+    
+    def get_project_list(self, filter_arg):
+        if self.master == None:
+            return
+        
+        # Scroll the view back to the top instead of keeping current yview
+        self.project_checklist._parent_canvas.yview_moveto(0)
+        Thread(
+            target=self.master._get_project_list,
+            args=(filter_arg),
+            daemon=True
+        ).start()
+        check_queue(self.master, self.q)
 
 class DownloadScreen(ttk.Frame):
     def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
