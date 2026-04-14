@@ -67,8 +67,10 @@ def check_queue(root, q):
         root.after(100, check_queue)
 
 class LoginScreen(ttk.Frame):
-    def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
+    def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
         super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+        self.q = q
+        
         self.user_label = ctk.CTkLabel(self.login_screen, text="Username:")
         self.user_entry = ctk.CTkEntry(self.login_screen)
         self.pw_label = ctk.CTkLabel(self.login_screen, text="Password:")
@@ -84,8 +86,10 @@ class LoginScreen(ttk.Frame):
         self.login_button.pack(pady=10)
 
 class ProjectSelectScreen(ttk.Frame):
-    def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
+    def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
         super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+        self.q = q
+
         self.project_opts = ["all", "shared", "unshared"]
         self.project_label = ctk.CTkLabel(self.project_select_screen, text="Projects to Download")
 
@@ -108,8 +112,10 @@ class ProjectSelectScreen(ttk.Frame):
         self.download_button.pack()
 
 class DownloadScreen(ttk.Frame):
-    def __init__(self, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
+    def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
         super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+        self.q = q
+        
         # TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
         # progress bar for current project
         self.cur_download_progress = ctk.CTkProgressBar(
