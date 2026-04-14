@@ -227,32 +227,32 @@ class AppGUI(ctk.CTk):
         self.current_screen = self.login_screen
         self.current_screen.pack()
 
-    def _switch_screen(self, new_screen : ttk.Frame):
+    def switch_screen(self, new_screen : ttk.Frame):
         self.current_screen.pack_forget()
         self.current_screen = new_screen
         new_screen.pack()
 
-    def _validate_login(self, username, pw, q):
+    def _validate_login(self, username, pw):
         success = self.download_controller.validate_login(username, pw)
         if not success:
-            q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
+            self.q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
             return
-        q.put(lambda: self._switch_screen(self.project_select_screen))
+        self.q.put(lambda: self.switch_screen(self.project_select_screen))
 
-    def _get_project_list(self, filter_arg, q):
+    def _get_project_list(self, filter_arg):
         projects = self.download_controller.get_projects(filter_arg)
         project_names = []
         for project in projects:
             project_names.append(project.title)
-        q.put(lambda: self.project_select_screen.project_checklist.make_checkbuttons(project_names))
+        self.q.put(lambda: self.project_select_screen.project_checklist.make_checkbuttons(project_names))
 
-    def _download_project(self, p_index, q):
+    def _download_project(self, p_index):
         download = self.download_controller.download_project(p_index)
         if not download:
-            q.put(lambda: print("Download failed"))
+            self.q.put(lambda: print("Download failed"))
             return
         # Update progress bar of total projects downloaded
-        q.put(lambda: print("Download successful"))
+        self.q.put(lambda: print("Download successful"))
 
 root = AppGUI()
 root.mainloop()
