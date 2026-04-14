@@ -7,6 +7,7 @@ import customtkinter as ctk
 
 from main import DownloadController
 
+# CUSTOM WIDGETS
 class ScrollableChecklist(ctk.CTkScrollableFrame):
     '''Create a list of checkbuttons that supports scrolling'''
     def __init__(self, master, items, **kwargs):
@@ -15,9 +16,9 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
         self.buttons = []
         # Populate with checkbuttons
         self.vars = []
-        self._make_checkbuttons(items)
+        self.make_checkbuttons(items)
 
-    def _make_checkbuttons(self, items):
+    def make_checkbuttons(self, items):
         # get rid of old buttons
         for button in self.buttons:
             button.destroy()
