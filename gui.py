@@ -89,7 +89,7 @@ class LoginScreen(ttk.Frame):
         if self.master == None:
             return
         Thread(
-            target=self.master._validate_login,
+            target=self.master.validate_login,
             args=(self.user_entry.get(), self.pw_entry.get()),
             daemon=True
         ).start()
@@ -166,7 +166,7 @@ class ProjectSelectScreen(ttk.Frame):
         # Scroll the view back to the top instead of keeping current yview
         self.project_checklist._parent_canvas.yview_moveto(0)
         Thread(
-            target=self.master._get_project_list,
+            target=self.master.get_project_list,
             args=(filter_arg,),
             daemon=True
         ).start()
@@ -208,7 +208,7 @@ class DownloadScreen(ttk.Frame):
         for i in range(total_projects):
             p_index = selected[i]
             Thread(
-                target=self.master._download_project,
+                target=self.master.download_project,
                 args=(p_index,),
                 daemon=True
             ).start()
@@ -236,21 +236,21 @@ class AppGUI(ctk.CTk):
         self.current_screen = new_screen
         new_screen.pack()
 
-    def _validate_login(self, username, pw):
+    def validate_login(self, username, pw):
         success = self.download_controller.validate_login(username, pw)
         if not success:
             self.q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
             return
         self.q.put(lambda: self.switch_screen(self.project_select_screen))
 
-    def _get_project_list(self, filter_arg):
+    def get_project_list(self, filter_arg):
         projects = self.download_controller.get_projects(filter_arg)
         project_names = []
         for project in projects:
             project_names.append(project.title)
         self.q.put(lambda: self.project_select_screen.project_checklist.make_checkbuttons(project_names))
 
-    def _download_project(self, p_index):
+    def download_project(self, p_index):
         download = self.download_controller.download_project(p_index)
         if not download:
             self.q.put(lambda: print("Download failed"))
