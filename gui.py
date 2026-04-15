@@ -7,6 +7,9 @@ import customtkinter as ctk
 
 from main import DownloadController
 
+ctk.FontManager.load_font("assets/texgyreheros.gyreheros-regular.otf")
+ctk.set_default_color_theme("assets/scratch-theme.json")
+
 # CUSTOM WIDGETS
 class ScrollableChecklist(ctk.CTkScrollableFrame):
     '''Create a list of checkbuttons that supports scrolling'''
