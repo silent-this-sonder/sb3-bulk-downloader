@@ -64,19 +64,19 @@ def check_queue(root : ctk.CTk, q : Queue):
         callback = q.get_nowait()
         callback()
     except:
-        root.after(100, check_queue)
+        root.after(100, lambda: check_queue(root, q))
 
 class LoginScreen(ttk.Frame):
-    def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
-        super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+    def __init__(self, q, master = None, **kwargs):
+        super().__init__(master, **kwargs)
         self.q = q
         
-        self.user_label = ctk.CTkLabel(self.login_screen, text="Username:")
-        self.user_entry = ctk.CTkEntry(self.login_screen)
-        self.pw_label = ctk.CTkLabel(self.login_screen, text="Password:")
-        self.pw_entry = ctk.CTkEntry(self.login_screen, show="*")
+        self.user_label = ctk.CTkLabel(self, text="Username:")
+        self.user_entry = ctk.CTkEntry(self)
+        self.pw_label = ctk.CTkLabel(self, text="Password:")
+        self.pw_entry = ctk.CTkEntry(self, show="*")
         self.login_button = ctk.CTkButton(
-            self.login_screen, text="Login",
+            self, text="Login",
             command=self.validate_login
         )
         self.user_label.pack(pady=5)
@@ -96,22 +96,22 @@ class LoginScreen(ttk.Frame):
         check_queue(self.master, self.q)
 
 class ProjectSelectScreen(ttk.Frame):
-    def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
-        super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+    def __init__(self, q, master = None, **kwargs):
+        super().__init__(master, **kwargs)
         self.q = q
 
         self.project_opts = ["all", "shared", "unshared"]
-        self.project_label = ctk.CTkLabel(self.project_select_screen, text="Projects to Download")
+        self.project_label = ctk.CTkLabel(self, text="Projects to Download")
 
         self.project_filtervar = tk.StringVar(value="Select an option")
-        self.project_optmenu = ctk.CTkOptionMenu(self.project_select_screen, variable=self.project_filtervar, values=self.project_opts)
+        self.project_optmenu = ctk.CTkOptionMenu(self, variable=self.project_filtervar, values=self.project_opts)
         self.project_filtervar.trace_add("write", lambda *args: self.get_project_list(self.project_filtervar.get()))
 
-        self.project_selectall_button = ctk.CTkButton(self.project_select_screen, command=self.select_all_projects, text="Select all")
+        self.project_selectall_button = ctk.CTkButton(self, command=self.select_all_projects, text="Select all")
 
-        self.project_checklist = ScrollableChecklist(self.project_select_screen, [])
+        self.project_checklist = ScrollableChecklist(self, [])
         self.download_button = ctk.CTkButton(
-            self.project_select_screen, text="Download Selected",
+            self, text="Download Selected",
             command=self.download_selected_projects
         )
 
@@ -142,18 +142,7 @@ class ProjectSelectScreen(ttk.Frame):
         step_val = 100 * 1 / total_projects
 
         self.master.switch_screen(self.master.download_screen)
-        self.all_download_label.configure(
-            text=f"0 / {total_projects} projects downloaded"
-        )
-
-        for i in range(total_projects):
-            p_index = selected[i]
-            Thread(
-                target=self.master._download_project,
-                args=(p_index),
-                daemon=True
-            ).start()
-            check_queue(self.master, self.q)
+        self.master.download_screen.download_selected_projects(selected, total_projects, step_val)
 
     def get_selected_projects(self):
         selected = []
@@ -173,18 +162,19 @@ class ProjectSelectScreen(ttk.Frame):
         if self.master == None:
             return
         
+        print(filter_arg)
         # Scroll the view back to the top instead of keeping current yview
         self.project_checklist._parent_canvas.yview_moveto(0)
         Thread(
             target=self.master._get_project_list,
-            args=(filter_arg),
+            args=(filter_arg,),
             daemon=True
         ).start()
         check_queue(self.master, self.q)
 
 class DownloadScreen(ttk.Frame):
-    def __init__(self, q, master = None, *, border = ..., borderwidth = ..., class_ = "", cursor = "", height = 0, name = ..., padding = ..., relief = ..., style = "", takefocus = "", width = 0):
-        super().__init__(master, border=border, borderwidth=borderwidth, class_=class_, cursor=cursor, height=height, name=name, padding=padding, relief=relief, style=style, takefocus=takefocus, width=width)
+    def __init__(self, q, master = None, **kwargs):
+        super().__init__(master, **kwargs)
         self.q = q
         
         # TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
@@ -209,6 +199,20 @@ class DownloadScreen(ttk.Frame):
         self.cur_download_label.pack()
         self.all_download_progress.pack()
         self.all_download_label.pack()
+
+    def download_selected_projects(self, selected, total_projects, step_val):
+        self.all_download_label.configure(
+            text=f"0 / {total_projects} projects downloaded"
+        )
+
+        for i in range(total_projects):
+            p_index = selected[i]
+            Thread(
+                target=self.master._download_project,
+                args=(p_index,),
+                daemon=True
+            ).start()
+            check_queue(self.master, self.q)
 
 # GUI APP
 class AppGUI(ctk.CTk):
