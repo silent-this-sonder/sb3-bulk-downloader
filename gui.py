@@ -1,6 +1,5 @@
 from threading import Thread
 import tkinter as tk
-from tkinter import ttk
 from queue import Queue
 
 import customtkinter as ctk
@@ -69,7 +68,7 @@ def check_queue(root : ctk.CTk, q : Queue):
     except:
         root.after(100, lambda: check_queue(root, q))
 
-class LoginScreen(ttk.Frame):
+class LoginScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
         self.q = q
@@ -98,7 +97,7 @@ class LoginScreen(ttk.Frame):
         ).start()
         check_queue(self.master, self.q)
 
-class ProjectSelectScreen(ttk.Frame):
+class ProjectSelectScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
         self.q = q
@@ -175,7 +174,7 @@ class ProjectSelectScreen(ttk.Frame):
         ).start()
         check_queue(self.master, self.q)
 
-class DownloadScreen(ttk.Frame):
+class DownloadScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
         self.q = q
@@ -234,7 +233,7 @@ class AppGUI(ctk.CTk):
         self.current_screen = self.login_screen
         self.current_screen.pack()
 
-    def switch_screen(self, new_screen : ttk.Frame):
+    def switch_screen(self, new_screen : ctk.CTkFrame):
         self.current_screen.pack_forget()
         self.current_screen = new_screen
         new_screen.pack()
