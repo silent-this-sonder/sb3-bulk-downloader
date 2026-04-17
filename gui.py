@@ -71,19 +71,21 @@ class LoginScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
         self.q = q
-        
-        self.user_label = ctk.CTkLabel(self, text="Username:")
-        self.user_entry = ctk.CTkEntry(self)
-        self.pw_label = ctk.CTkLabel(self, text="Password:")
-        self.pw_entry = ctk.CTkEntry(self, show="*")
+
+        self.user_label = ctk.CTkLabel(self, font=master.bold_font, text="Username")
+        self.user_entry = ctk.CTkEntry(self, width=204, height=38)
+        self.pw_label = ctk.CTkLabel(self, font=master.bold_font, text="Password")
+        self.pw_entry = ctk.CTkEntry(self, width=204, height=38, show="*")
         self.login_button = ctk.CTkButton(
-            self, text="Login",
+            self, font=master.bold_font, text="Sign in",
+            width=62, height=43,
             command=self.validate_login
         )
-        self.user_label.pack(pady=5)
-        self.user_entry.pack(pady=5)
-        self.pw_label.pack(pady=5)
-        self.pw_entry.pack(pady=5)
+
+        self.user_label.pack(pady=2)
+        self.user_entry.pack(pady=(2, 25))
+        self.pw_label.pack(pady=2)
+        self.pw_entry.pack(pady=(2, 25))
         self.login_button.pack(pady=10)
 
     def validate_login(self):
