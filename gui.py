@@ -231,12 +231,12 @@ class AppGUI(ctk.CTk):
         self.download_screen = DownloadScreen(self.q)
 
         self.current_screen = self.login_screen
-        self.current_screen.pack()
+        self.current_screen.place(relx=0.5, rely=0.5, anchor="center")
 
     def switch_screen(self, new_screen : ctk.CTkFrame):
-        self.current_screen.pack_forget()
+        self.current_screen.place_forget()
         self.current_screen = new_screen
-        new_screen.pack()
+        new_screen.place(relx=0.5, rely=0.5, anchor="center")
 
     def validate_login(self, username, pw):
         success = self.download_controller.validate_login(username, pw)
