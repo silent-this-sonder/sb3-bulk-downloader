@@ -229,9 +229,9 @@ class AppGUI(ctk.CTk):
         self.download_controller = DownloadController()
         self.q = Queue()
 
-        self.login_screen = LoginScreen(self.q)
-        self.project_select_screen = ProjectSelectScreen(self.q)
-        self.download_screen = DownloadScreen(self.q)
+        self.login_screen = LoginScreen(self.q, self)
+        self.project_select_screen = ProjectSelectScreen(self.q, self)
+        self.download_screen = DownloadScreen(self.q, self)
 
         self.current_screen = self.login_screen
         self.current_screen.place(relx=0.5, rely=0.5, anchor="center")
