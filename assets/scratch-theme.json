@@ -137,17 +137,17 @@
     },
     "CTkFont": {
         "macOS": {
-            "family": "TeXGyreHeros GyreHeros-Regular",
+            "family": "TeXGyreHeros-Regular",
             "size": 13,
             "weight": "normal"
         },
         "Windows": {
-            "family": "TeXGyreHeros GyreHeros-Regular",
+            "family": "TeXGyreHeros-Regular",
             "size": 13,
             "weight": "normal"
         },
         "Linux": {
-            "family": "TeXGyreHeros GyreHeros-Regular",
+            "family": "TeXGyreHeros-Regular",
             "size": 13,
             "weight": "normal"
         }

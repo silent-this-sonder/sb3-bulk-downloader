@@ -6,7 +6,6 @@ import customtkinter as ctk
 
 from main import DownloadController
 
-ctk.FontManager.load_font("assets/texgyreheros.gyreheros-regular.otf")
 ctk.set_default_color_theme("assets/scratch-theme.json")
 
 # CUSTOM WIDGETS
@@ -220,6 +219,10 @@ class DownloadScreen(ctk.CTkFrame):
 class AppGUI(ctk.CTk):
     def __init__(self, fg_color = None, **kwargs):
         super().__init__(fg_color, **kwargs)
+
+        ctk.FontManager.load_font("assets/texgyreheros.gyreheros-regular.otf")
+        bold_font = ctk.CTkFont(family="TeXGyreHeros", size=13, weight="bold")
+
         self.title("SB3 Bulk Downloader")
         self.geometry("960x720")
 
