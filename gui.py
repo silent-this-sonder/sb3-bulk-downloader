@@ -221,7 +221,7 @@ class AppGUI(ctk.CTk):
         super().__init__(fg_color, **kwargs)
 
         ctk.FontManager.load_font("assets/texgyreheros.gyreheros-regular.otf")
-        bold_font = ctk.CTkFont(family="TeXGyreHeros", size=13, weight="bold")
+        self.bold_font = ctk.CTkFont(family="TeXGyreHeros", size=13, weight="bold")
 
         self.title("SB3 Bulk Downloader")
         self.geometry("960x720")
