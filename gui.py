@@ -17,7 +17,10 @@ def get_default_download_dir() -> Path:
     base_dir = downloads if downloads.exists() else Path.home()
     return base_dir / "Scratch-Projects"
 
-ctk.set_default_color_theme("assets/scratch-theme.json")
+BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+ASSETS_DIR = BASE_DIR / "assets"
+
+ctk.set_default_color_theme(str(ASSETS_DIR / "scratch-theme.json"))
 ctk.set_appearance_mode("system")
 
 # CUSTOM WIDGETS
@@ -68,17 +71,17 @@ class CTkMessagebox(ctk.CTkToplevel):
         self.master.wait_window(self)
 
 # SCREENS
-logo_pil = Image.open("assets/logo.png")
+logo_pil = Image.open(str(ASSETS_DIR / "logo.png"))
 logo_img = ctk.CTkImage(
     light_image=logo_pil, dark_image=logo_pil, size=(200, 200)
 )
 
-eye_pil = Image.open("assets/eye.png")
+eye_pil = Image.open(str(ASSETS_DIR / "eye.png"))
 eye_img = ctk.CTkImage(
     light_image=eye_pil, dark_image=eye_pil, size=(22, 22)
 )
 
-eye2_pil = Image.open("assets/eye2.png")
+eye2_pil = Image.open(str(ASSETS_DIR / "eye2.png"))
 eye_closed_img = ctk.CTkImage(
     light_image=eye2_pil, dark_image=eye2_pil, size=(22, 22)
 )
@@ -351,7 +354,7 @@ class AppGUI(ctk.CTk):
     def __init__(self, fg_color = None, **kwargs):
         super().__init__(fg_color, **kwargs)
 
-        ctk.FontManager.load_font("assets/texgyreheros.gyreheros-regular.otf")
+        ctk.FontManager.load_font(str(ASSETS_DIR / "texgyreheros.gyreheros-regular.otf"))
         self.bold_font = ctk.CTkFont(family="TeXGyreHeros", size=13, weight="bold")
 
         self.title("SB3 Bulk Downloader")
@@ -431,8 +434,9 @@ class AppGUI(ctk.CTk):
                     # this makes the button unclickable if there are no projects to download
             self.q.put(update_ui)
         except Exception as e:
+            error_msg = str(e)
             def error_ui():
-                self.project_select_screen.project_label.configure(text=f"Error loading projects: {e}")
+                self.project_select_screen.project_label.configure(text=f"Error loading projects: {error_msg}")
                 self.project_select_screen.project_checklist.make_checkbuttons([])
                 self.project_select_screen.download_button.configure(state="disabled")
             self.q.put(error_ui)

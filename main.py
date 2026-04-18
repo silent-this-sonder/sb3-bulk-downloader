@@ -8,6 +8,7 @@ import zipfile
 import warnings
 import requests
 import scratchattach as s3
+from getpass import getpass
 
 class DownloadController:
     """In charge of the downloading logic.
@@ -78,9 +79,9 @@ class DownloadController:
                 self.projects += projects
                 print(f"Current amount of projects so far: {len(self.projects)}")
             except Exception as e:
-                # print("the thing broke here's your error:", e)
-                # traceback.print_exc()
-                break
+                print("Error:", e)
+                traceback.print_exc()
+                raise
             pagenum += 1
         
         self.progress_bar_info["total_projects"] = len(self.projects)
@@ -526,7 +527,7 @@ class CLIDownloader(DownloadController):
         """Get and validate the user's username and password."""
         while True: 
             username = input("Enter username: ")
-            password = input("Enter password: ")
+            password = getpass("Enter password: ")
             if self.validate_login(username, password):
                 print("Login successful!")
                 break
