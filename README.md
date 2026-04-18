@@ -37,6 +37,9 @@ The bulk downloader has two main files: `main.py` and `gui.py`.
 
 `gui.py` uses `customtkinter` for the GUI elements, which are organized into classes. These classes connect to the functions in `main.py`.
 
+![Diagram of the project](assets/diagram.png)
+A diagram, courtesy of [https://gitdiagram.com/](GitDiagram)
+
 ## Support & Troubleshooting
 If you run into any bugs, we will do our best to squash them. Simply write a detailed issue that describes your problem.
 
