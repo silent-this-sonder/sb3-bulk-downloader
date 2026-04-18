@@ -182,13 +182,19 @@ class DownloadScreen(ctk.CTkFrame):
         self.q = q
         
         # TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
+        self.screen_label = ctk.CTkLabel(
+            self, font=master.bold_font,
+            text="Download in Progress"
+        )
         # progress bar for current project
         self.cur_download_progress = ctk.CTkProgressBar(
-            self, orientation="horizontal", width=500
+            self, orientation="horizontal",
+            width=500, height=40
         )
         # progress bar for all projects
         self.all_download_progress = ctk.CTkProgressBar(
-            self, orientation="horizontal", width=500
+            self, orientation="horizontal",
+            width=500, height=40
         )
         # labels for progress
         self.cur_download_label = ctk.CTkLabel(
@@ -199,9 +205,10 @@ class DownloadScreen(ctk.CTkFrame):
             self,
             text="Currently downloading [project title], [num] / [total] projects downloaded"
         )
-        self.cur_download_progress.pack()
+        self.screen_label.pack(pady=20)
+        self.cur_download_progress.pack(pady=(20, 2))
         self.cur_download_label.pack()
-        self.all_download_progress.pack()
+        self.all_download_progress.pack(pady=(30, 2))
         self.all_download_label.pack()
 
     def download_selected_projects(self, selected, total_projects, step_val):
