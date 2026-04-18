@@ -7,6 +7,7 @@ import customtkinter as ctk
 from main import DownloadController
 
 ctk.set_default_color_theme("assets/scratch-theme.json")
+ctk.set_appearance_mode("dark")
 
 # CUSTOM WIDGETS
 class ScrollableChecklist(ctk.CTkScrollableFrame):

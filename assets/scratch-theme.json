@@ -15,10 +15,10 @@
     "CTkButton": {
         "corner_radius": 8,
         "border_width": 0,
-        "fg_color": ["#855cd6", "#1f538d"],
-        "hover_color": ["#7753C0", "#14375e"],
-        "border_color": ["#855cd6", "#949A9F"],
-        "text_color": ["gray100", "#DCE4EE"],
+        "fg_color": ["#855cd6", "#623eab"],
+        "hover_color": ["#7753C0", "#7753C0"],
+        "border_color": ["#855cd6", "#623eab"],
+        "text_color": ["gray100", "gray84"],
         "text_color_disabled": ["gray74", "gray60"]
     },
     "CTkLabel": {
@@ -37,9 +37,9 @@
     "CTkCheckBox": {
         "corner_radius": 5,
         "border_width": 1,
-        "fg_color": ["#855cd6", "#1f538d"],
-        "border_color": ["#855cd6", "#949A9F"],
-        "hover_color": ["#7753C0", "#14375e"],
+        "fg_color": ["#855cd6", "#623eab"],
+        "border_color": ["#855cd6", "#623eab"],
+        "hover_color": ["#7753C0", "#7753C0"],
         "checkmark_color": ["gray100", "gray90"],
         "text_color": ["gray14", "gray84"],
         "text_color_disabled": ["gray60", "gray45"]
@@ -69,7 +69,7 @@
         "corner_radius": 5,
         "border_width": 0,
         "fg_color": ["#939BA2", "#4A4D50"],
-        "progress_color": ["#855cd6", "#1f538d"],
+        "progress_color": ["#855cd6", "#623eab"],
         "border_color": ["gray", "gray"]
     },
     "CTkSlider": {
@@ -84,9 +84,9 @@
     },
     "CTkOptionMenu": {
         "corner_radius": 6,
-        "fg_color": ["#855cd6", "#1f538d"],
-        "button_color": ["#855cd6", "#14375e"],
-        "button_hover_color": ["#7753C0", "#1e2c40"],
+        "fg_color": ["#855cd6", "#623eab"],
+        "button_color": ["#855cd6", "#623eab"],
+        "button_hover_color": ["#7753C0", "#7753C0"],
         "text_color": ["gray100", "#DCE4EE"],
         "text_color_disabled": ["gray74", "gray60"]
     },
@@ -94,8 +94,8 @@
         "corner_radius": 6,
         "border_width": 2,
         "fg_color": ["#F9F9FA", "#343638"],
-        "border_color": ["#855cd6", "#565B5E"],
-        "button_color": ["#855cd6", "#565B5E"],
+        "border_color": ["#855cd6", "#623eab"],
+        "button_color": ["#855cd6", "#623eab"],
         "button_hover_color": ["#7753C0", "#7A848D"],
         "text_color": ["gray14", "gray84"],
         "text_color_disabled": ["gray50", "gray45"]
