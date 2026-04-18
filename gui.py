@@ -239,7 +239,6 @@ class AppGUI(ctk.CTk):
         h = 720
         x = (self.winfo_screenwidth() // 2) - (w // 2)
         y = (self.winfo_screenheight() // 2) - (h // 2)
-        print(f"{x} {y}")
         self.geometry(f"{w}x{h}+{x}+{y}")
 
         self.download_controller = DownloadController()
