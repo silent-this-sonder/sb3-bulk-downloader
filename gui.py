@@ -2,13 +2,20 @@ import sys
 import time
 from threading import Thread
 import tkinter as tk
+from tkinter import filedialog
 from queue import Queue, Empty
+from pathlib import Path
  
 
 import customtkinter as ctk
 from PIL import Image
 
 from main import DownloadController
+
+def get_default_download_dir() -> Path:
+    downloads = Path.home() / "Downloads"
+    base_dir = downloads if downloads.exists() else Path.home()
+    return base_dir / "Scratch-Projects"
 
 ctk.set_default_color_theme("assets/scratch-theme.json")
 ctk.set_appearance_mode("system")
@@ -145,6 +152,15 @@ class ProjectSelectScreen(ctk.CTkFrame):
         self.skip_existing_var = tk.BooleanVar(value=True)
         self.skip_existing_checkbox = ctk.CTkCheckBox(self, text="Skip already downloaded projects (Resume)", variable=self.skip_existing_var)
         
+        self.output_dir = get_default_download_dir()
+        self.master.download_controller.output_dir = str(self.output_dir)
+        self.output_dir_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.output_dir_label = ctk.CTkLabel(self.output_dir_frame, text=f"Output: {self.output_dir}", text_color="#4d4d4d", anchor="w")
+        self.browse_button = ctk.CTkButton(self.output_dir_frame, text="Browse...", width=60, command=self.browse_output_dir)
+        
+        self.output_dir_label.pack(side="left", padx=(0, 10), fill="x", expand=True)
+        self.browse_button.pack(side="right")
+
         self.download_button = ctk.CTkButton(
             self, font=master.bold_font, text="Download selected",
             command=self.download_selected_projects,
@@ -156,13 +172,22 @@ class ProjectSelectScreen(ctk.CTkFrame):
         self.project_selectall_button.pack(padx=20, pady=(0, 10))
         self.project_checklist.pack(padx=20, fill="y", expand=True)
         self.skip_existing_checkbox.pack(padx=20, pady=(10, 0))
-        self.download_button.pack(padx=20, pady=20)
+        self.output_dir_frame.pack(padx=20, pady=(15, 0), fill="x")
+        self.download_button.pack(padx=20, pady=15)
 
     # Select all the projects in the list
     def select_all_projects(self):
         for buttonvar in self.project_checklist.vars:
             buttonvar.set(True)
         self.project_selectall_button.configure(text="Deselect all", command=self.deselect_all_projects)
+
+    def browse_output_dir(self):
+        chosen = filedialog.askdirectory(initialdir=str(self.output_dir))
+        if chosen:
+            self.output_dir = Path(chosen)
+            self.output_dir_label.configure(text=f"Output: {chosen}")
+            if self.master:
+                self.master.download_controller.output_dir = chosen
 
     # Deselect the projects in the list
     def deselect_all_projects(self):

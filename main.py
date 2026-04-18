@@ -20,6 +20,7 @@ class DownloadController:
     def __init__(self):
         """Initializes a DownloadController object."""
         self.session = None
+        self.output_dir = "downloads"
 
         self.projects = []
         self.progress_bar_info = {
@@ -118,7 +119,7 @@ class DownloadController:
             if not fnc:
                 fnc = "unnamed project"
                 
-            sb3_path = os.path.join("downloads", fnc, f"{fnc}.sb3")
+            sb3_path = os.path.join(self.output_dir, fnc, f"{fnc}.sb3")
             if os.path.exists(sb3_path):
                 self.progress_bar_info["current_project"] = p.title
                 self.progress_bar_info["downloaded_assets"] = 1
@@ -139,7 +140,7 @@ class DownloadController:
         print(DownloadController.pbar_to_string(self.progress_bar_info))
 
         # Download and zip the zb3
-        download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile)
+        download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile, self.output_dir)
         if not download:
             return False
         project_dir = download
@@ -268,7 +269,7 @@ class DownloadController:
         return all_progress
 
     @staticmethod
-    def download_sb3(pbar_info, project, fnc, jsonfile):
+    def download_sb3(pbar_info, project, fnc, jsonfile, output_dir):
         """Downloads the project.json and assets from Scratch into a new directory.
         
         Args:
@@ -276,10 +277,11 @@ class DownloadController:
             project: A scratchattach Project object to download.
             fnc: A string of the filename for the downloaded sb3 file.
             jsonfile: A string of the project.json filename.
+            output_dir: The base directory where the project folder should be created.
         Returns:
             The path to the directory containing the project assets.
         """
-        project_dir = DownloadController.make_sb3_folder(fnc)
+        project_dir = DownloadController.make_sb3_folder(fnc, output_dir)
         try:
             project.download(
                 filename=jsonfile,
@@ -312,15 +314,16 @@ class DownloadController:
         return project_dir
     
     @staticmethod
-    def make_sb3_folder(fnc):
+    def make_sb3_folder(fnc, output_dir):
         """Makes the directory for the new sb3.
         
         Args:
             fnc: A string of the filename for the downloaded sb3 file.
+            output_dir: The directory where the sb3 folder should be created.
         Returns:
             The path to the directory that will store the project assets.
         """
-        project_dir = os.path.join("downloads", fnc, "temp_assets")
+        project_dir = os.path.join(output_dir, fnc, "temp_assets")
         os.makedirs(project_dir, exist_ok=True)
         return project_dir
 
