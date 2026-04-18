@@ -1,3 +1,4 @@
+import sys
 from threading import Thread
 import tkinter as tk
 from queue import Queue, Empty
@@ -97,6 +98,10 @@ class LoginScreen(ctk.CTkFrame):
         self.pw_entry.pack(padx=20, pady=(2, 25))
         self.login_button.pack(padx=20, pady=(10, 20))
 
+        self.user_entry.bind("<Return>", lambda event: self.validate_login()) # Allows pressing enter to login instead of pressing button
+        self.pw_entry.bind("<Return>", lambda event: self.validate_login())
+
+
     def validate_login(self):
         if self.master is None:
             return
@@ -122,10 +127,11 @@ class ProjectSelectScreen(ctk.CTkFrame):
         self.project_selectall_button = ctk.CTkButton(self, command=self.select_all_projects, font=master.bold_font, text="Select all", width=84, height=31)
 
         self.project_checklist = ScrollableChecklist(self, [], width=300)
+        
         self.download_button = ctk.CTkButton(
             self, font=master.bold_font, text="Download selected",
             command=self.download_selected_projects,
-            width=84, height=31
+            width=84, height=31, state="disabled"
         )
 
         self.project_label.pack(padx=20, pady=20)
@@ -149,13 +155,14 @@ class ProjectSelectScreen(ctk.CTkFrame):
     def download_selected_projects(self):
         if self.master is None:
             return
-        if total_projects == 0:
-            return
-        
         selected = self.get_selected_projects()
         total_projects = len(selected)
-        step_val = 100 * 1 / total_projects
 
+        if total_projects == 0:
+            return
+    
+        step_val = 1.0 / total_projects
+        
         self.master.switch_screen(self.master.download_screen)
         self.master.download_screen.download_selected_projects(selected, total_projects, step_val)
 
@@ -223,6 +230,8 @@ class DownloadScreen(ctk.CTkFrame):
         self.all_download_label.pack(padx=20)
 
     def download_selected_projects(self, selected, total_projects, step_val):
+        if total_projects == 0:
+            return
         self.all_download_label.configure(
             text=f"0 / {total_projects} projects downloaded"
         )
@@ -260,6 +269,24 @@ class AppGUI(ctk.CTk):
 
         self.current_screen = self.login_screen
         self.current_screen.place(relx=0.5, rely=0.5, anchor="center")
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.queue_loop()
+
+    def queue_loop(self):
+        try:
+            while True:
+                callback = self.q.get_nowait()
+                callback()
+        except Empty:
+            pass
+
+        self.after(10, self.queue_loop)
+
+    def on_closing(self):
+        '''Here we see a lovely function for manually closing this app window because Python is a hard-headed mule :D
+        '''
+        self.destroy()
+        sys.exit()
 
     def switch_screen(self, new_screen : ctk.CTkFrame):
         self.current_screen.place_forget()
@@ -275,10 +302,17 @@ class AppGUI(ctk.CTk):
 
     def get_project_list(self, filter_arg):
         projects = self.download_controller.get_projects(filter_arg)
-        project_names = []
-        for project in projects:
-            project_names.append(project.title)
-        self.q.put(lambda: self.project_select_screen.project_checklist.make_checkbuttons(project_names))
+        project_names = [project.title for project in projects]
+
+        def update_ui():
+            self.project_select_screen.project_checklist.make_checkbuttons(project_names)
+            if project_names:
+                self.project_select_screen.download_button.configure(state="normal")
+                # this makes the button clickable
+            else:
+                self.project_select_screen.download_button.configure(state="disabled")
+                # this makes the button unclickable if there are no projects to download
+        self.q.put(update_ui)
 
     def download_project(self, p_index):
         download = self.download_controller.download_project(p_index)
@@ -286,7 +320,7 @@ class AppGUI(ctk.CTk):
             self.q.put(lambda: print("Download failed"))
             return
         # Update progress bar of total projects downloaded
-        self.q.put(lambda: print("Download successful"))
+        self.q.put(lambda: print("Download successful!!!!!"))
 
 root = AppGUI()
 root.mainloop()
