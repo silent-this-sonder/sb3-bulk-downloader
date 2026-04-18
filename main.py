@@ -144,7 +144,7 @@ class DownloadController:
             return False
         project_dir = download
         
-        project_dir = download
+       
         
         sb3_path = DownloadController.zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")

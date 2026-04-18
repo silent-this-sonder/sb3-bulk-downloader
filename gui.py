@@ -204,6 +204,9 @@ class ProjectSelectScreen(ctk.CTkFrame):
         # print(filter_arg)
         # Scroll the view back to the top instead of keeping current yview
         self.project_checklist._parent_canvas.yview_moveto(0)
+        self.project_checklist.make_checkbuttons([])  # clear the list
+        self.download_button.configure(state="disabled")
+        self.project_label.configure(text="Loading projects...")  # ← loading feedback
         Thread(
             target=self.master.get_project_list,
             args=(filter_arg,),
@@ -247,17 +250,25 @@ class DownloadScreen(ctk.CTkFrame):
 
     def download_selected_projects(self, selected, total_projects, step_val, skip_existing):
         if total_projects == 0:
+            CTkMessagebox(self.master, "Nothing selected", "Please select at least one project.")
             return
-        self.all_download_label.configure(
-            text=f"0 / {total_projects} projects downloaded"
-        )
+
+        info = self.master.download_controller.progress_bar_info
+        info["downloaded_projects"] = 0
+        info["total_projects"] = total_projects
+        info["downloaded_assets"] = 0
+        info["total_assets"] = 0
+        info["current_project"] = "Starting..."
+
+        self.master.switch_screen(self.master.download_screen)
+        self.all_download_label.configure(text=f"0 / {total_projects} projects downloaded")
 
         Thread(
             target=self.master.download_all_projects,
             args=(selected, total_projects, skip_existing),
             daemon=True
         ).start()
-        
+
         self.update_progress()
 
     def update_progress(self):
@@ -352,6 +363,8 @@ class AppGUI(ctk.CTk):
         project_names = [project.title for project in projects]
 
         def update_ui():
+            self.project_select_screen.project_label.configure(text="Projects to Download")
+            
             self.project_select_screen.project_checklist.make_checkbuttons(project_names)
             if project_names:
                 self.project_select_screen.download_button.configure(state="normal")
@@ -372,7 +385,13 @@ class AppGUI(ctk.CTk):
         for p_index in selected:
             download = self.download_controller.download_project(p_index, skip_existing)
             if not download:
-                self.q.put(lambda idx=p_index: print(f"Download failed for index {idx}"))
+                # retry one more time before giving up
+                download = self.download_controller.download_project(p_index, skip_existing)
+            if not download:
+                self.q.put(lambda idx=p_index: CTkMessagebox(
+                    self.master, "Download Failed",
+                    f"Failed to download project at index {idx}. Skipping."
+                ))
                 continue
         self.q.put(lambda: print("All downloads completed!"))
 
