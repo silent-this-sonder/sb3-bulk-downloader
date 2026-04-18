@@ -11,8 +11,20 @@ That program is this: it will help you quickly download all your projects from y
 todo
 
 ### Usage
-There are two ways to use SB3 Bulk Downloader: the CLI or the GUI. Currently, only the CLI is fully usable.
-1. Run main.py
+There are two ways to use SB3 Bulk Downloader: the CLI or the GUI.
+
+#### Running the GUI
+This is the more visual method, so most people will find it more intuitive.
+1. Log in with your Scratch username and password. This is used *only* to access Scratch. It is *not* stored anywhere. (For the more paranoid among you, it's open-source. Look at the code yourself.)
+2. At the project select screen, click the "Sort by" button to filter your My Stuff page. Projects may take some time to load.
+3. Click "Select all" or click the individual checkboxes to choose which projects to download.
+4. Click the "Download selected" button when you are ready.
+5. Sit back and watch the progress bars, which show how much of each project is downloaded as well as the number of currently downloaded projects.
+6. Sit back, play games, and go grab an extremely caffeinated coffee so you can sit and relax and sip away ~as your heart rate rises~
+7. Don't close the program, unplug your computer, or lose Internet while doing this or your download will go kaboom :smiley:
+
+#### Running the CLI
+1. Run `main.py`
 2. Log in with your Scratch username and password (This allows you to download unshared projects as well)
 3. Filter your project list: whether you want all, only unshared, or only shared projects to download
 4. Sit back, play games, and go grab an extremely caffeinated coffee so you can sit and relax and sip away ~as your heart rate rises~
