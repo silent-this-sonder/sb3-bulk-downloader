@@ -59,17 +59,6 @@ class CTkMessagebox(ctk.CTkToplevel):
         self.master.wait_window(self)
 
 # SCREENS
-def check_queue(root : ctk.CTk, q : Queue):
-    '''
-    Checks the queue for callback functions from the backend tasks and runs it.
-    This stops the GUI from waiting and freezing the screen.
-    '''
-    try:
-        callback = q.get_nowait()
-        callback()
-    except Empty:
-        root.after(100, lambda: check_queue(root, q))
-
 logo_pil = Image.open("assets/logo.png")
 logo_img = ctk.CTkImage(
     light_image=logo_pil, dark_image=logo_pil, size=(200, 200)
@@ -110,7 +99,6 @@ class LoginScreen(ctk.CTkFrame):
             args=(self.user_entry.get(), self.pw_entry.get()),
             daemon=True
         ).start()
-        check_queue(self.master, self.q)
 
 class ProjectSelectScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
@@ -192,7 +180,6 @@ class ProjectSelectScreen(ctk.CTkFrame):
             args=(filter_arg,),
             daemon=True
         ).start()
-        check_queue(self.master, self.q)
 
 class DownloadScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
@@ -236,14 +223,45 @@ class DownloadScreen(ctk.CTkFrame):
             text=f"0 / {total_projects} projects downloaded"
         )
 
-        for i in range(total_projects):
-            p_index = selected[i]
-            Thread(
-                target=self.master.download_project,
-                args=(p_index,),
-                daemon=True
-            ).start()
-            check_queue(self.master, self.q)
+        Thread(
+            target=self.master.download_all_projects,
+            args=(selected, total_projects),
+            daemon=True
+        ).start()
+        
+        self.update_progress()
+
+    def update_progress(self):
+        if self.master is None:
+            return
+            
+        info = self.master.download_controller.progress_bar_info
+        
+        # update current project progress
+        if info["total_assets"] > 0:
+            cur_progress = info["downloaded_assets"] / info["total_assets"]
+        else:
+            cur_progress = 0
+        self.cur_download_progress.set(cur_progress)
+        self.cur_download_label.configure(
+            text=f"Currently downloading {info['current_project']}, {info['downloaded_assets']} / {info['total_assets']} assets downloaded"
+        )
+        
+        # update all projects progress
+        if info["total_projects"] > 0:
+            all_progress = info["downloaded_projects"] / info["total_projects"]
+        else:
+            all_progress = 0
+            
+        self.all_download_progress.set(all_progress)
+        self.all_download_label.configure(
+            text=f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
+        )
+        
+        if info["downloaded_projects"] < info["total_projects"]:
+            self.after(100, self.update_progress)
+        else:
+            self.cur_download_label.configure(text="Finished downloading!")
 
 # GUI APP
 class AppGUI(ctk.CTk):
@@ -280,7 +298,7 @@ class AppGUI(ctk.CTk):
         except Empty:
             pass
 
-        self.after(10, self.queue_loop)
+        self.after(100, self.queue_loop)
 
     def on_closing(self):
         '''Here we see a lovely function for manually closing this app window because Python is a hard-headed mule :D
@@ -314,13 +332,20 @@ class AppGUI(ctk.CTk):
                 # this makes the button unclickable if there are no projects to download
         self.q.put(update_ui)
 
-    def download_project(self, p_index):
-        download = self.download_controller.download_project(p_index)
-        if not download:
-            self.q.put(lambda: print("Download failed"))
-            return
-        # Update progress bar of total projects downloaded
-        self.q.put(lambda: print("Download successful!!!!!"))
+    def download_all_projects(self, selected, total_projects):
+        info = self.download_controller.progress_bar_info
+        info["downloaded_projects"] = 0
+        info["total_projects"] = total_projects
+        info["downloaded_assets"] = 0
+        info["total_assets"] = 0
+        info["current_project"] = "Starting..."
+        
+        for p_index in selected:
+            download = self.download_controller.download_project(p_index)
+            if not download:
+                self.q.put(lambda idx=p_index: print(f"Download failed for index {idx}"))
+                continue
+        self.q.put(lambda: print("All downloads completed!"))
 
 root = AppGUI()
 root.mainloop()

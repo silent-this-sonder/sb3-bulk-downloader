@@ -116,13 +116,112 @@ class DownloadController:
             return False
         project_dir = download
         
+        project_dir = download
+        
         sb3_path = DownloadController.zip_sb3(fnc, project_dir)
         print(f"Project saved as {sb3_path}")
+        
+        # Add metadata and thumbnail after zipping so they sit alongside the sb3
+        self.add_metadata(os.path.dirname(sb3_path), p, project)
+        self.progress_bar_info["downloaded_assets"] += 1
+        
+        self.download_thumbnail(project, os.path.dirname(sb3_path))
+        self.progress_bar_info["downloaded_assets"] += 1
+        
         self.progress_bar_info["downloaded_projects"] += 1
 
         # sleep 3 seconds so scratch doesn't rate limit
         t.sleep(3)
         return True
+    
+    def add_metadata(self, project_folder, p, project):
+        """Add metadata files alongside the downloaded project.
+        
+        Args:
+            project_folder: The directory where the sb3 file was saved.
+            p: The project entry from self.projects.
+            project: The connected scratchattach Project object.
+        """
+        # usually i would've used a txt file for this
+        # but i guess a markdown file is better especially now that microslop has added support for it in notepa- i mean sloppad
+        metadata_path = os.path.join(project_folder, "metadata.md")
+        
+        remix_info = ""
+        if project.remix_parent is not None:
+            remix_info = f"\n**Remix of**: [{project.remix_parent}](https://scratch.mit.edu/projects/{project.remix_parent}/)\n"
+            # In scratchattach, project.remix_parent is typically just the parent project ID or None
+
+        with open(metadata_path, "w", encoding="utf-8") as f:
+            content = f"""# {project.title}
+
+## Basic Info            
+
+**Project ID**: {p.id}
+
+**Created by**: {project.author().username}
+
+**Shared**: {'Yes' if project.is_shared else 'No'}
+
+**Created on**: {project.created}
+
+**Last modified**: {project.last_modified}
+
+**Share Date**: {project.share_date}
+
+**Original URL**: {project.url}
+{remix_info}
+**Comments Allowed**: {'Yes' if project.comments_allowed else 'No'}
+
+## Instructions
+{project.instructions}
+
+## Notes and Credits
+{project.notes}
+
+## Project Statistics
+
+👁️ **Views**: {project.views}
+❤️ **Loves**: {project.loves}
+⭐ **Favorites**: {project.favorites}
+ 
+"""
+            f.write(content)
+            
+            try:
+                comments = project.comments(limit=40, offset=0)
+                if comments:
+                    f.write("\n## Comments\n\n")
+                    for comment in comments:
+                        f.write(f"**{comment.author_name}**: {comment.content}\n\n")
+                        
+                        if getattr(comment, 'reply_count', 0) > 0:
+                            replies = comment.replies()
+                            for reply in replies:
+                                f.write(f"> **{reply.author_name}**: {reply.content}\n\n")
+            except Exception as e:
+                f.write(f"\n## Comments\n\n*Failed to load comments: {e}*\n\n")
+
+    def download_thumbnail(self, project, out_dir):
+        """Downloads the thumbnail for a project.
+        
+        Args:
+            project: A scratchattach Project object.
+            out_dir: The directory to download the thumbnail to.
+            """
+        thumb = project.thumbnail_url
+        if thumb:
+            try:
+                r = requests.get(thumb, stream=True, timeout=30)
+                r.raise_for_status()
+                thumb_path = os.path.join(out_dir, "thumbnail.png")
+                with open(thumb_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=32768):
+                        if chunk:
+                            f.write(chunk)
+            except Exception as e:
+                print(f"\tFailed to download thumbnail: {e}")
+
+
     
     # DOWNLOADER FUNCTIONS
 
@@ -193,7 +292,7 @@ class DownloadController:
         Returns:
             The path to the directory that will store the project assets.
         """
-        project_dir = os.path.join("downloads", fnc)
+        project_dir = os.path.join("downloads", fnc, "temp_assets")
         os.makedirs(project_dir, exist_ok=True)
         return project_dir
 
@@ -245,7 +344,8 @@ class DownloadController:
             data = json.load(f)
 
         md5exts = DownloadController.extract_md5exts(data)
-        pbar_info["total_assets"] = len(md5exts)
+        # Adding 2 extra assets to total for the metadata and thumbnail we make later!
+        pbar_info["total_assets"] = len(md5exts) + 2
         pbar_info["asset_stepval"] = 100 / pbar_info["total_assets"]
 
         if not md5exts:
@@ -324,8 +424,9 @@ class DownloadController:
         Returns:
             The path to the finished sb3 file.
         """
+        parent_dir = os.path.dirname(project_dir)
         sb3_filename = f"{fnc}.sb3"
-        sb3_path = os.path.join("downloads", sb3_filename)
+        sb3_path = os.path.join(parent_dir, sb3_filename)
         with zipfile.ZipFile(sb3_path, 'w', zipfile.ZIP_DEFLATED) as zf:
             for root, dirs, files in os.walk(project_dir):
                 for file in files:
@@ -334,7 +435,12 @@ class DownloadController:
                     zf.write(file_path, arcname)
                 # hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm as scratch accept isnt the same it can corrupt it
         shutil.rmtree(project_dir)
+        
+
+
         return sb3_path
+    
+    
 
 class CLIDownloader(DownloadController):
     """Both the view and controller for the CLI downloader."""
