@@ -38,4 +38,6 @@ The bulk downloader has two main files: `main.py` and `gui.py`.
 `gui.py` uses `customtkinter` for the GUI elements, which are organized into classes. These classes connect to the functions in `main.py`.
 
 ## Support & Troubleshooting
-todo
+If you run into any bugs, we will do our best to squash them. Simply write a detailed issue that describes your problem.
+
+However, another reason the downloader does not work may be that the Scratch servers are down. In this case, the program cannot access Scratch to download the projects from it. The only solution is to wait it out.
