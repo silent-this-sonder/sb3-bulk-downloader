@@ -2,6 +2,7 @@ import sys
 from threading import Thread
 import tkinter as tk
 from queue import Queue, Empty
+import ctypes
 
 import customtkinter as ctk
 from PIL import Image
@@ -116,6 +117,9 @@ class ProjectSelectScreen(ctk.CTkFrame):
 
         self.project_checklist = ScrollableChecklist(self, [], width=300)
         
+        self.skip_existing_var = tk.BooleanVar(value=True)
+        self.skip_existing_checkbox = ctk.CTkCheckBox(self, text="Skip already downloaded projects (Resume)", variable=self.skip_existing_var)
+        
         self.download_button = ctk.CTkButton(
             self, font=master.bold_font, text="Download selected",
             command=self.download_selected_projects,
@@ -126,6 +130,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
         self.project_optmenu.pack(padx=20, pady=10)
         self.project_selectall_button.pack(padx=20, pady=(0, 10))
         self.project_checklist.pack(padx=20, fill="y", expand=True)
+        self.skip_existing_checkbox.pack(padx=20, pady=(10, 0))
         self.download_button.pack(padx=20, pady=20)
 
     # Select all the projects in the list
@@ -152,7 +157,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
         step_val = 1.0 / total_projects
         
         self.master.switch_screen(self.master.download_screen)
-        self.master.download_screen.download_selected_projects(selected, total_projects, step_val)
+        self.master.download_screen.download_selected_projects(selected, total_projects, step_val, self.skip_existing_var.get())
 
     def get_selected_projects(self):
         selected = []
@@ -216,7 +221,7 @@ class DownloadScreen(ctk.CTkFrame):
         self.all_download_progress.pack(padx=20, pady=(30, 2))
         self.all_download_label.pack(padx=20)
 
-    def download_selected_projects(self, selected, total_projects, step_val):
+    def download_selected_projects(self, selected, total_projects, step_val, skip_existing):
         if total_projects == 0:
             return
         self.all_download_label.configure(
@@ -225,7 +230,7 @@ class DownloadScreen(ctk.CTkFrame):
 
         Thread(
             target=self.master.download_all_projects,
-            args=(selected, total_projects),
+            args=(selected, total_projects, skip_existing),
             daemon=True
         ).start()
         
@@ -332,7 +337,7 @@ class AppGUI(ctk.CTk):
                 # this makes the button unclickable if there are no projects to download
         self.q.put(update_ui)
 
-    def download_all_projects(self, selected, total_projects):
+    def download_all_projects(self, selected, total_projects, skip_existing):
         info = self.download_controller.progress_bar_info
         info["downloaded_projects"] = 0
         info["total_projects"] = total_projects
@@ -341,7 +346,7 @@ class AppGUI(ctk.CTk):
         info["current_project"] = "Starting..."
         
         for p_index in selected:
-            download = self.download_controller.download_project(p_index)
+            download = self.download_controller.download_project(p_index, skip_existing)
             if not download:
                 self.q.put(lambda idx=p_index: print(f"Download failed for index {idx}"))
                 continue

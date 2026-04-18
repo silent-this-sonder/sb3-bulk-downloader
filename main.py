@@ -90,15 +90,41 @@ class DownloadController:
         """
         return self.progress_bar_info[key]
 
-    def download_project(self, p_index):
+    def download_project(self, p_index, skip_existing=False):
         """Downloads a project from Scratch onto the user's device.
         
         Args:
             p_index: An int corresponding to a project's index from the self.projects list.
+            skip_existing: Optional boolean to skip downloading if the project already exists.
         Returns:
             A boolean of whether the download was successful or not.
         """
         p = self.projects[p_index]
+        
+        if skip_existing:
+            # Predict the sb3 path to see if it already exists before making a network request
+            fn = p.title.translate(self.translation_table)
+            fnc = "".join(c for c in fn if c.isalnum() or c in (' ', '.', '_')).rstrip()
+            fnc = f"{fnc}_{p.id}"
+            reserved_names = {
+                "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4",
+                "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2",
+                "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+            }
+            if fnc.upper() in reserved_names:
+                fnc = f"_{fnc}"
+            if not fnc:
+                fnc = "unnamed project"
+                
+            sb3_path = os.path.join("downloads", fnc, f"{fnc}.sb3")
+            if os.path.exists(sb3_path):
+                self.progress_bar_info["current_project"] = p.title
+                self.progress_bar_info["downloaded_assets"] = 1
+                self.progress_bar_info["total_assets"] = 1
+                self.progress_bar_info["downloaded_projects"] += 1
+                print(f"Skipped {fnc}.sb3 (already exists)")
+                return True
+
         project = self.session.connect_project(p.id)
         jsonfile, fnc = DownloadController.make_filenames(p, project, self.translation_table)
 
@@ -188,7 +214,7 @@ class DownloadController:
             f.write(content)
             
             try:
-                comments = project.comments(limit=40, offset=0)
+                comments = project.comments(limit=200, offset=0)
                 if comments:
                     f.write("\n## Comments\n\n")
                     for comment in comments:
@@ -270,7 +296,7 @@ class DownloadController:
             return False
 
         # Rename the downloaded file to project.json
-        os.rename(
+        os.replace(
             os.path.join(project_dir, actual_downloaded_file),
             os.path.join(project_dir, "project.json")
         )
