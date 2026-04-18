@@ -141,6 +141,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
         self.q = q
+        self._project_load_id = 0
 
         self.project_opts = ["all", "shared", "unshared"]
         self.project_label = ctk.CTkLabel(self, font=master.bold_font, text="Projects to Download")
@@ -232,15 +233,20 @@ class ProjectSelectScreen(ctk.CTkFrame):
         if self.master is None:
             return
         
+        self._project_load_id += 1
+        load_id = self._project_load_id
+
         # print(filter_arg)
         # Scroll the view back to the top instead of keeping current yview
         self.project_checklist._parent_canvas.yview_moveto(0)
         self.project_checklist.make_checkbuttons([])  # clear the list
         self.download_button.configure(state="disabled")
         self.project_label.configure(text="Loading projects...")  # ← loading feedback
+        self.project_optmenu.configure(state="disabled")  # prevent new fetches while loading
+
         Thread(
             target=self.master.get_project_list,
-            args=(filter_arg,),
+            args=(filter_arg, load_id),
             daemon=True
         ).start()
 
@@ -404,7 +410,7 @@ class AppGUI(ctk.CTk):
             return
         self.q.put(lambda: self.switch_screen(self.project_select_screen))
 
-    def get_project_list(self, filter_arg):
+    def get_project_list(self, filter_arg, load_id):
         is_loading = [True]
         
         def update_loading_label():
@@ -422,7 +428,11 @@ class AppGUI(ctk.CTk):
             projects = self.download_controller.get_projects(filter_arg)
             project_names = [project.title for project in projects]
 
-            def update_ui():
+            def update_ui(lid=load_id):
+                # Discard result if a newer fetch has already started
+                if self.project_select_screen._project_load_id != lid:
+                    return
+                self.project_select_screen.project_optmenu.configure(state="normal")
                 self.project_select_screen.project_label.configure(text="Projects to Download")
                 
                 self.project_select_screen.project_checklist.make_checkbuttons(project_names)
@@ -435,7 +445,10 @@ class AppGUI(ctk.CTk):
             self.q.put(update_ui)
         except Exception as e:
             error_msg = str(e)
-            def error_ui():
+            def error_ui(lid=load_id):
+                if self.project_select_screen._project_load_id != lid:
+                    return
+                self.project_select_screen.project_optmenu.configure(state="normal")
                 self.project_select_screen.project_label.configure(text=f"Error loading projects: {error_msg}")
                 self.project_select_screen.project_checklist.make_checkbuttons([])
                 self.project_select_screen.download_button.configure(state="disabled")
