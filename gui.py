@@ -33,7 +33,7 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
             self.vars.append(tk.BooleanVar(value=False))
             cb = ctk.CTkCheckBox(self, text=item, variable=self.vars[i])
             self.buttons.append(cb)
-            cb.pack(anchor="w")
+            cb.pack(pady=2, anchor="w")
 
 class CTkMessagebox(ctk.CTkToplevel):
     def __init__(self, master : ctk.CTk, title, desc, *args, **kwargs):
@@ -83,11 +83,11 @@ class LoginScreen(ctk.CTkFrame):
             command=self.validate_login
         )
 
-        self.user_label.pack(pady=2)
-        self.user_entry.pack(pady=(2, 25))
-        self.pw_label.pack(pady=2)
-        self.pw_entry.pack(pady=(2, 25))
-        self.login_button.pack(pady=10)
+        self.user_label.pack(padx=20, pady=(20, 2))
+        self.user_entry.pack(padx=20, pady=(2, 25))
+        self.pw_label.pack(padx=20, pady=2)
+        self.pw_entry.pack(padx=20, pady=(2, 25))
+        self.login_button.pack(padx=20, pady=(10, 20))
 
     def validate_login(self):
         if self.master == None:
@@ -120,11 +120,11 @@ class ProjectSelectScreen(ctk.CTkFrame):
             width=84, height=31
         )
 
-        self.project_label.pack(pady=20)
-        self.project_optmenu.pack(pady=10)
-        self.project_selectall_button.pack(pady=(0, 10))
-        self.project_checklist.pack(fill="y", expand=True)
-        self.download_button.pack(pady=20)
+        self.project_label.pack(padx=20, pady=20)
+        self.project_optmenu.pack(padx=20, pady=10)
+        self.project_selectall_button.pack(padx=20, pady=(0, 10))
+        self.project_checklist.pack(padx=20, fill="y", expand=True)
+        self.download_button.pack(padx=20, pady=20)
 
     # Select all the projects in the list
     def select_all_projects(self):
@@ -206,11 +206,11 @@ class DownloadScreen(ctk.CTkFrame):
             self,
             text="Currently downloading [project title], [num] / [total] projects downloaded"
         )
-        self.screen_label.pack(pady=20)
-        self.cur_download_progress.pack(pady=(20, 2))
-        self.cur_download_label.pack()
-        self.all_download_progress.pack(pady=(30, 2))
-        self.all_download_label.pack()
+        self.screen_label.pack(padx=20, pady=20)
+        self.cur_download_progress.pack(padx=20, pady=(20, 2))
+        self.cur_download_label.pack(padx=20)
+        self.all_download_progress.pack(padx=20, pady=(30, 2))
+        self.all_download_label.pack(padx=20)
 
     def download_selected_projects(self, selected, total_projects, step_val):
         self.all_download_label.configure(
