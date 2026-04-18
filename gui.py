@@ -1,6 +1,6 @@
 from threading import Thread
 import tkinter as tk
-from queue import Queue
+from queue import Queue, Empty
 
 import customtkinter as ctk
 from PIL import Image
@@ -66,7 +66,7 @@ def check_queue(root : ctk.CTk, q : Queue):
     try:
         callback = q.get_nowait()
         callback()
-    except:
+    except Empty:
         root.after(100, lambda: check_queue(root, q))
 
 logo_pil = Image.open("assets/logo.png")
@@ -148,6 +148,8 @@ class ProjectSelectScreen(ctk.CTkFrame):
 
     def download_selected_projects(self):
         if self.master == None:
+            return
+        if total_projects == 0:
             return
         
         selected = self.get_selected_projects()
