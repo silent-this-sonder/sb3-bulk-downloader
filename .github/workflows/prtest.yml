@@ -59,30 +59,42 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      
+  
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
+  
       - uses: actions/download-artifact@v4
         with:
-          path: .screenshots
+          path: /tmp/screenshots
           pattern: screenshot-*
           merge-multiple: true
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update gui screenshots [skip ci]"
-          file_pattern: '.screenshots/*.png'
-
+  
+      # Push screenshots to a dedicated branch — never the PR branch
+      - name: Publish screenshots to dedicated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+  
+          if git fetch origin screenshots 2>/dev/null; then
+            git checkout screenshots
+          else
+            git checkout --orphan screenshots
+            git rm -rf . --quiet || true
+          fi
+  
+          mkdir -p pr-${{ github.event.pull_request.number }}
+          cp /tmp/screenshots/*.png pr-${{ github.event.pull_request.number }}/
+          git add pr-${{ github.event.pull_request.number }}
+          git diff --staged --quiet || git commit -m "screenshots: PR #${{ github.event.pull_request.number }} [skip ci]"
+          git push origin screenshots
+  
       - uses: peter-evans/find-comment@v3
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: 'Screenshots Table'
-
+  
       - uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -90,9 +102,9 @@ jobs:
           edit-mode: replace
           body: |
             ### Screenshots Table
-
+  
             | OS | Screenshot |
             |----|------------|
-            | <img width="12" height="12" alt="Ubuntu Logo" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu | <img src="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.ref }}/.screenshots/ubuntu-latest.png" width="700" /> |
-            | <img width="12" height="12" alt="Windows Logo" src="https://github.com/user-attachments/assets/4da4c060-732a-4aaf-b080-6b8de0600c71" /> Windows | <img src="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.ref }}/.screenshots/windows-latest.png" width="700" /> |
-            | <img width="12" height="12" alt="Apple Logo" src="https://github.com/user-attachments/assets/636ee068-b7a7-489d-a545-a616534900ed"/> MacOS | <img src="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.pull_request.head.ref }}/.screenshots/macos-latest.png" width="700" /> |
+            | <img width="12" height="12" alt="Ubuntu Logo" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/ubuntu-latest.png" width="700" /> |
+            | <img width="12" height="12" alt="Windows Logo" src="https://github.com/user-attachments/assets/4da4c060-732a-4aaf-b080-6b8de0600c71" /> Windows | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/windows-latest.png" width="700" /> |
+            | <img width="12" height="12" alt="Apple Logo" src="https://github.com/user-attachments/assets/636ee068-b7a7-489d-a545-a616534900ed" /> MacOS | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/macos-latest.png" width="700" /> |
