@@ -21,7 +21,7 @@ jobs:
 
       - run: |
           python -m pip install --upgrade pip
-          pip install pyautogui pillow
+          pip install pyautogui pillow requests scratchattach customtkinter
 
       - if: runner.os == 'Linux'
         run: |
