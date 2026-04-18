@@ -269,7 +269,7 @@ class AppGUI(ctk.CTk):
     def validate_login(self, username, pw):
         success = self.download_controller.validate_login(username, pw)
         if not success:
-            self.q.put(lambda: CTkMessagebox(root, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
+            self.q.put(lambda: CTkMessagebox(self, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
             return
         self.q.put(lambda: self.switch_screen(self.project_select_screen))
 
