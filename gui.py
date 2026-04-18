@@ -2,7 +2,7 @@ import sys
 from threading import Thread
 import tkinter as tk
 from queue import Queue, Empty
-import ctypes
+ 
 
 import customtkinter as ctk
 from PIL import Image
