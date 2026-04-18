@@ -33,7 +33,7 @@ This is the more visual method, so most people will find it more intuitive.
 ## How It Works
 The bulk downloader has two main files: `main.py` and `gui.py`.
 
-`main.py` handles the main logic with TimMcCool's `scratchattach` library in order to fetch the projects from Scratch. It also contains the code for the CLI downloader.
+`main.py` handles the main logic with TimMcCool's `scratchattach` library to fetch the projects from Scratch. It also contains the code for the CLI downloader.
 
 `gui.py` uses `customtkinter` for the GUI elements, which are organized into classes. These classes connect to the functions in `main.py`.
 
