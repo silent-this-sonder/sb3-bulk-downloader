@@ -5,7 +5,7 @@ import string
 import time as t
 import traceback
 import zipfile
-
+import warnings
 import requests
 import scratchattach as s3
 
@@ -47,6 +47,7 @@ class DownloadController:
         Returns:
             A boolean of whether or not the login was successful.
         """
+        warnings.filterwarnings('ignore', category=s3.LoginDataWarning)
         if not (username and password):
             return False
         try:

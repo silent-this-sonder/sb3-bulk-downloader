@@ -125,6 +125,7 @@ class LoginScreen(ctk.CTkFrame):
         self.pw_toggle_button.configure(image=eye_img if self.pw_visible else eye_closed_img)
 
     def validate_login(self):
+        
         if self.master is None:
             return
         Thread(
