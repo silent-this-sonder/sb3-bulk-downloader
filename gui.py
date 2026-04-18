@@ -234,7 +234,12 @@ class AppGUI(ctk.CTk):
         self.bold_font = ctk.CTkFont(family="TeXGyreHeros", size=13, weight="bold")
 
         self.title("SB3 Bulk Downloader")
-        self.geometry("960x720")
+        w = 960
+        h = 720
+        x = (self.winfo_screenwidth() // 2) - (w // 2)
+        y = (self.winfo_screenheight() // 2) - (h // 2)
+        print(f"{x} {y}")
+        self.geometry(f"{w}x{h}+{x}+{y}")
 
         self.download_controller = DownloadController()
         self.q = Queue()
