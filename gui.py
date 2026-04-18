@@ -389,7 +389,7 @@ class AppGUI(ctk.CTk):
                 download = self.download_controller.download_project(p_index, skip_existing)
             if not download:
                 self.q.put(lambda idx=p_index: CTkMessagebox(
-                    self.master, "Download Failed",
+                    self, "Download Failed",
                     f"Failed to download project at index {idx}. Skipping."
                 ))
                 continue
