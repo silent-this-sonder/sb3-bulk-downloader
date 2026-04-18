@@ -78,6 +78,9 @@ class DownloadController:
                 print(f"Found {len(projects)} projects on page {pagenum} with filter '{filter_arg}'")
                 self.projects += projects
                 print(f"Current amount of projects so far: {len(self.projects)}")
+            except s3.utils.exceptions.FetchError:
+                # Reached end pages
+                break
             except Exception as e:
                 print("Error:", e)
                 traceback.print_exc()
