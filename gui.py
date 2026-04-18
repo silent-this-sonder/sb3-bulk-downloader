@@ -175,7 +175,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
         if self.master == None:
             return
         
-        print(filter_arg)
+        # print(filter_arg)
         # Scroll the view back to the top instead of keeping current yview
         self.project_checklist._parent_canvas.yview_moveto(0)
         Thread(

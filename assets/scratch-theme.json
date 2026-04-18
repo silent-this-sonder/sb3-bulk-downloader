@@ -65,7 +65,7 @@
         "text_color": ["gray14", "gray84"],
         "text_color_disabled": ["gray60", "gray45"]
     },
-        "CTkProgressBar": {
+    "CTkProgressBar": {
         "corner_radius": 5,
         "border_width": 0,
         "fg_color": ["#939BA2", "#4A4D50"],
