@@ -219,7 +219,6 @@ class DownloadScreen(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self.q = q
         
-        # TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
         self.screen_label = ctk.CTkLabel(
             self, font=master.bold_font,
             text="Download in Progress"
