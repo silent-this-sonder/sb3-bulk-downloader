@@ -73,6 +73,12 @@ class LoginScreen(ctk.CTkFrame):
         self.logo_label = ctk.CTkLabel(self, image=logo_img, text="")
         self.user_label = ctk.CTkLabel(self, font=master.bold_font, text="Username")
         self.user_entry = ctk.CTkEntry(self, width=204, height=38)
+        self.info_label = ctk.CTkLabel(
+            self,
+            text="Credentials are only sent to Scratch's servers, and we don't store them.",
+            wraplength=250,
+            text_color="gray"
+        )
         self.pw_label = ctk.CTkLabel(self, font=master.bold_font, text="Password")
         self.pw_entry = ctk.CTkEntry(self, width=204, height=38, show="*")
         self.login_button = ctk.CTkButton(
@@ -82,8 +88,9 @@ class LoginScreen(ctk.CTkFrame):
         )
 
         self.logo_label.pack(pady=20)
+        self.info_label.pack(padx=20, pady=(0, 15))
         self.user_label.pack(padx=20, pady=2)
-        self.user_entry.pack(padx=20, pady=(2, 25))
+        self.user_entry.pack(padx=20, pady=(2, 10))
         self.pw_label.pack(padx=20, pady=2)
         self.pw_entry.pack(padx=20, pady=(2, 25))
         self.login_button.pack(padx=20, pady=(10, 20))
