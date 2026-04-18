@@ -98,7 +98,7 @@ class LoginScreen(ctk.CTkFrame):
         self.login_button.pack(padx=20, pady=(10, 20))
 
     def validate_login(self):
-        if self.master == None:
+        if self.master is None:
             return
         Thread(
             target=self.master.validate_login,
@@ -147,7 +147,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
         self.project_selectall_button.configure(text="Select all", command=self.select_all_projects)
 
     def download_selected_projects(self):
-        if self.master == None:
+        if self.master is None:
             return
         if total_projects == 0:
             return
@@ -174,7 +174,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
         return selected
     
     def get_project_list(self, filter_arg):
-        if self.master == None:
+        if self.master is None:
             return
         
         # print(filter_arg)
