@@ -3,6 +3,7 @@ import tkinter as tk
 from queue import Queue
 
 import customtkinter as ctk
+from PIL import Image
 
 from main import DownloadController
 
@@ -68,11 +69,17 @@ def check_queue(root : ctk.CTk, q : Queue):
     except:
         root.after(100, lambda: check_queue(root, q))
 
+logo_pil = Image.open("assets/logo.png")
+logo_img = ctk.CTkImage(
+    light_image=logo_pil, dark_image=logo_pil, size=(200, 200)
+)
+
 class LoginScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
         self.q = q
 
+        self.logo_label = ctk.CTkLabel(self, image=logo_img, text="")
         self.user_label = ctk.CTkLabel(self, font=master.bold_font, text="Username")
         self.user_entry = ctk.CTkEntry(self, width=204, height=38)
         self.pw_label = ctk.CTkLabel(self, font=master.bold_font, text="Password")
@@ -83,7 +90,8 @@ class LoginScreen(ctk.CTkFrame):
             command=self.validate_login
         )
 
-        self.user_label.pack(padx=20, pady=(20, 2))
+        self.logo_label.pack(pady=20)
+        self.user_label.pack(padx=20, pady=2)
         self.user_entry.pack(padx=20, pady=(2, 25))
         self.pw_label.pack(padx=20, pady=2)
         self.pw_entry.pack(padx=20, pady=(2, 25))
