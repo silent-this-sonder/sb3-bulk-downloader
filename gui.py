@@ -65,6 +65,16 @@ logo_img = ctk.CTkImage(
     light_image=logo_pil, dark_image=logo_pil, size=(200, 200)
 )
 
+eye_pil = Image.open("assets/eye.png")
+eye_img = ctk.CTkImage(
+    light_image=eye_pil, dark_image=eye_pil, size=(22, 22)
+)
+
+eye2_pil = Image.open("assets/eye2.png")
+eye_closed_img = ctk.CTkImage(
+    light_image=eye2_pil, dark_image=eye2_pil, size=(22, 22)
+)
+
 class LoginScreen(ctk.CTkFrame):
     def __init__(self, q, master = None, **kwargs):
         super().__init__(master, **kwargs)
@@ -83,11 +93,9 @@ class LoginScreen(ctk.CTkFrame):
         )
         self.pw_label = ctk.CTkLabel(self, font=master.bold_font, text="Password")
         self.pw_entry = ctk.CTkEntry(self, width=204, height=38, show="*")
-        self.login_button = ctk.CTkButton(
-            self, font=master.bold_font, text="Sign in",
-            width=62, height=43,
-            command=self.validate_login
-        )
+        self.pw_visible = False
+        self.pw_toggle_button = ctk.CTkButton(self, image=eye_closed_img, text="", width=26, height=26, fg_color="transparent", hover_color="#d0d0d0", command=self.toggle_password_visibility)
+        self.login_button = ctk.CTkButton(self, font=master.bold_font, text="Sign in", width=62, height=43, command=self.validate_login)
 
         self.main_label.pack(pady=20)
         self.logo_label.pack(pady=20)
@@ -96,11 +104,17 @@ class LoginScreen(ctk.CTkFrame):
         self.user_entry.pack(padx=20, pady=(2, 10))
         self.pw_label.pack(padx=20, pady=2)
         self.pw_entry.pack(padx=20, pady=(2, 25))
+        self.pw_toggle_button.place(in_=self.pw_entry, relx=1.0, rely=0.5, x=5, anchor="w")
         self.login_button.pack(padx=20, pady=(10, 20))
 
         self.user_entry.bind("<Return>", lambda event: self.validate_login()) # Allows pressing enter to login instead of pressing button
         self.pw_entry.bind("<Return>", lambda event: self.validate_login())
 
+
+    def toggle_password_visibility(self):
+        self.pw_visible = not self.pw_visible
+        self.pw_entry.configure(show="" if self.pw_visible else "*")
+        self.pw_toggle_button.configure(image=eye_img if self.pw_visible else eye_closed_img)
 
     def validate_login(self):
         if self.master is None:
