@@ -1,4 +1,5 @@
 import sys
+import time
 from threading import Thread
 import tkinter as tk
 from queue import Queue, Empty
@@ -242,11 +243,20 @@ class DownloadScreen(ctk.CTkFrame):
             self,
             text="Currently downloading [project title], [num] / [total] projects downloaded"
         )
+        self.back_button = ctk.CTkButton(
+            self, font=master.bold_font, text="Back to Projects",
+            command=self.go_back, state="disabled"
+        )
         self.screen_label.pack(padx=20, pady=20)
         self.cur_download_progress.pack(padx=20, pady=(20, 2))
         self.cur_download_label.pack(padx=20)
         self.all_download_progress.pack(padx=20, pady=(30, 2))
         self.all_download_label.pack(padx=20)
+        self.back_button.pack(padx=20, pady=20)
+
+    def go_back(self):
+        if self.master is not None:
+            self.master.switch_screen(self.master.project_select_screen)
 
     def download_selected_projects(self, selected, total_projects, step_val, skip_existing):
         if total_projects == 0:
@@ -259,6 +269,8 @@ class DownloadScreen(ctk.CTkFrame):
         info["downloaded_assets"] = 0
         info["total_assets"] = 0
         info["current_project"] = "Starting..."
+
+        self.back_button.configure(state="disabled")
 
         self.master.switch_screen(self.master.download_screen)
         self.all_download_label.configure(text=f"0 / {total_projects} projects downloaded")
@@ -300,8 +312,13 @@ class DownloadScreen(ctk.CTkFrame):
         
         if info["downloaded_projects"] < info["total_projects"]:
             self.after(100, self.update_progress)
-        else:
-            self.cur_download_label.configure(text="Finished downloading!")
+      
+
+    def on_downloads_completed(self):
+        self.cur_download_label.configure(text="Finished downloading!")
+        self.all_download_label.configure(text="All projects processed")
+        self.back_button.configure(state="normal")
+
 
 # GUI APP
 class AppGUI(ctk.CTk):
@@ -359,7 +376,21 @@ class AppGUI(ctk.CTk):
         self.q.put(lambda: self.switch_screen(self.project_select_screen))
 
     def get_project_list(self, filter_arg):
+        is_loading = [True]
+        
+        def update_loading_label():
+            while is_loading[0]:
+                try:
+                    num_projects = len(self.download_controller.projects)
+                    self.q.put(lambda n=num_projects: getattr(self.project_select_screen, 'project_label').configure(text=f"Loading projects... ({n} found)"))
+                except Exception:
+                    pass
+                time.sleep(0.5)
+
+        Thread(target=update_loading_label, daemon=True).start()
+
         projects = self.download_controller.get_projects(filter_arg)
+        is_loading[0] = False
         project_names = [project.title for project in projects]
 
         def update_ui():
@@ -393,7 +424,7 @@ class AppGUI(ctk.CTk):
                     f"Failed to download project at index {idx}. Skipping."
                 ))
                 continue
-        self.q.put(lambda: print("All downloads completed!"))
+        self.q.put(lambda: self.download_screen.on_downloads_completed())
 
 root = AppGUI()
 root.mainloop()
