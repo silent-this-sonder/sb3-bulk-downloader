@@ -203,6 +203,7 @@ class ProjectSelectScreen(ctk.CTkFrame):
         total_projects = len(selected)
 
         if total_projects == 0:
+            CTkMessagebox(self, "Nothing selected", "Please select at least one project.")
             return
     
         step_val = 1.0 / total_projects
@@ -326,7 +327,7 @@ class DownloadScreen(ctk.CTkFrame):
         
         # update all projects progress
         if info["total_projects"] > 0:
-            all_progress = info["downloaded_projects"] / info["total_projects"]
+            all_progress = info["processed_projects"] / info["total_projects"]
         else:
             all_progress = 0
             
@@ -335,7 +336,7 @@ class DownloadScreen(ctk.CTkFrame):
             text=f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
         )
         
-        if info["downloaded_projects"] < info["total_projects"]:
+        if info["processed_projects"] < info["total_projects"]:
             self.after(100, self.update_progress)
       
 
@@ -414,25 +415,34 @@ class AppGUI(ctk.CTk):
 
         Thread(target=update_loading_label, daemon=True).start()
 
-        projects = self.download_controller.get_projects(filter_arg)
-        is_loading[0] = False
-        project_names = [project.title for project in projects]
+        try:
+            projects = self.download_controller.get_projects(filter_arg)
+            project_names = [project.title for project in projects]
 
-        def update_ui():
-            self.project_select_screen.project_label.configure(text="Projects to Download")
-            
-            self.project_select_screen.project_checklist.make_checkbuttons(project_names)
-            if project_names:
-                self.project_select_screen.download_button.configure(state="normal")
-                # this makes the button clickable
-            else:
+            def update_ui():
+                self.project_select_screen.project_label.configure(text="Projects to Download")
+                
+                self.project_select_screen.project_checklist.make_checkbuttons(project_names)
+                if project_names:
+                    self.project_select_screen.download_button.configure(state="normal")
+                    # this makes the button clickable
+                else:
+                    self.project_select_screen.download_button.configure(state="disabled")
+                    # this makes the button unclickable if there are no projects to download
+            self.q.put(update_ui)
+        except Exception as e:
+            def error_ui():
+                self.project_select_screen.project_label.configure(text=f"Error loading projects: {e}")
+                self.project_select_screen.project_checklist.make_checkbuttons([])
                 self.project_select_screen.download_button.configure(state="disabled")
-                # this makes the button unclickable if there are no projects to download
-        self.q.put(update_ui)
+            self.q.put(error_ui)
+        finally:
+            is_loading[0] = False
 
     def download_all_projects(self, selected, total_projects, skip_existing):
         info = self.download_controller.progress_bar_info
         info["downloaded_projects"] = 0
+        info["processed_projects"] = 0
         info["total_projects"] = total_projects
         info["downloaded_assets"] = 0
         info["total_assets"] = 0
@@ -448,8 +458,9 @@ class AppGUI(ctk.CTk):
                     self, "Download Failed",
                     f"Failed to download project at index {idx}. Skipping."
                 ))
-                continue
+            info["processed_projects"] += 1
         self.q.put(lambda: self.download_screen.on_downloads_completed())
 
-root = AppGUI()
-root.mainloop()
+if __name__ == "__main__":
+    root = AppGUI()
+    root.mainloop()

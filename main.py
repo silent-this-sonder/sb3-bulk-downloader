@@ -28,6 +28,7 @@ class DownloadController:
             "asset_stepval": 0,
 
             "downloaded_projects": 0,
+            "processed_projects": 0,
             "total_projects": 0,
 
             "current_project": "",
@@ -71,6 +72,8 @@ class DownloadController:
         while True:
             try: 
                 projects = self.session.mystuff_projects(filter_arg, page=pagenum, sort_by="")
+                if not projects:
+                    break
                 print(f"Found {len(projects)} projects on page {pagenum} with filter '{filter_arg}'")
                 self.projects += projects
                 print(f"Current amount of projects so far: {len(self.projects)}")
@@ -81,7 +84,11 @@ class DownloadController:
             pagenum += 1
         
         self.progress_bar_info["total_projects"] = len(self.projects)
-        self.progress_bar_info["project_stepval"] = 100 / self.progress_bar_info["total_projects"]
+        if self.progress_bar_info["total_projects"] > 0:
+            self.progress_bar_info["project_stepval"] = 100 / self.progress_bar_info["total_projects"]
+        else:
+            self.progress_bar_info["project_stepval"] = 0
+            
         return self.projects
     
     def get_pbar(self, key):
@@ -129,40 +136,48 @@ class DownloadController:
                 print(f"Skipped {fnc}.sb3 (already exists)")
                 return True
 
-        project = self.session.connect_project(p.id)
-        jsonfile, fnc = DownloadController.make_filenames(p, project, self.translation_table)
+        project_dir = None
+        try:
+            project = self.session.connect_project(p.id)
+            jsonfile, fnc = DownloadController.make_filenames(p, project, self.translation_table)
 
-        # reset progress bar
-        self.progress_bar_info["current_project"] = project.title
-        self.progress_bar_info["downloaded_assets"] = 0
-        self.progress_bar_info["total_assets"] = 0
+            # reset progress bar
+            self.progress_bar_info["current_project"] = project.title
+            self.progress_bar_info["downloaded_assets"] = 0
+            self.progress_bar_info["total_assets"] = 0
 
-        # print the progress bar (for CLI)
-        print(DownloadController.pbar_to_string(self.progress_bar_info))
+            # print the progress bar (for CLI)
+            print(DownloadController.pbar_to_string(self.progress_bar_info))
 
-        # Download and zip the zb3
-        download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile, self.output_dir)
-        if not download:
+            # Download and zip the zb3
+            download = DownloadController.download_sb3(self.progress_bar_info, project, fnc, jsonfile, self.output_dir)
+            if not download:
+                return False
+            project_dir = download
+            
+           
+            
+            sb3_path = DownloadController.zip_sb3(fnc, project_dir)
+            print(f"Project saved as {sb3_path}")
+            
+            # Add metadata and thumbnail after zipping so they sit alongside the sb3
+            self.add_metadata(os.path.dirname(sb3_path), p, project)
+            self.progress_bar_info["downloaded_assets"] += 1
+            
+            self.download_thumbnail(project, os.path.dirname(sb3_path))
+            self.progress_bar_info["downloaded_assets"] += 1
+            
+            self.progress_bar_info["downloaded_projects"] += 1
+
+            # sleep 3 seconds so scratch doesn't rate limit
+            t.sleep(3)
+            return True
+        except Exception as e:
+            print(f"Failed to process project {p.id}: {e}")
+            traceback.print_exc()
+            if project_dir and os.path.exists(project_dir):
+                shutil.rmtree(project_dir, ignore_errors=True)
             return False
-        project_dir = download
-        
-       
-        
-        sb3_path = DownloadController.zip_sb3(fnc, project_dir)
-        print(f"Project saved as {sb3_path}")
-        
-        # Add metadata and thumbnail after zipping so they sit alongside the sb3
-        self.add_metadata(os.path.dirname(sb3_path), p, project)
-        self.progress_bar_info["downloaded_assets"] += 1
-        
-        self.download_thumbnail(project, os.path.dirname(sb3_path))
-        self.progress_bar_info["downloaded_assets"] += 1
-        
-        self.progress_bar_info["downloaded_projects"] += 1
-
-        # sleep 3 seconds so scratch doesn't rate limit
-        t.sleep(3)
-        return True
     
     def add_metadata(self, project_folder, p, project):
         """Add metadata files alongside the downloaded project.
@@ -307,11 +322,16 @@ class DownloadController:
         )
 
         # Process downloaded project JSON to fetch md5ext assets
-        DownloadController.process_project_json(
+        missing_assets = DownloadController.process_project_json(
             pbar_info,
             os.path.join(project_dir, "project.json"),
             asset_dir=project_dir
         )
+        
+        if missing_assets:
+            print(f"\tFailed to download {len(missing_assets)} assets")
+            return False
+            
         return project_dir
     
     @staticmethod
@@ -382,8 +402,9 @@ class DownloadController:
 
         if not md5exts:
             print("\tNo md5ext assets found in project.json")
-            return
+            return []
 
+        missing_assets = []
         for md5ext in sorted(md5exts):
             try:
                 downloaded = DownloadController.download_md5ext(md5ext, asset_dir)
@@ -391,6 +412,8 @@ class DownloadController:
                 pbar_info["downloaded_assets"] += 1
             except Exception as e:
                 print(f"\tFailed to download {md5ext}: {e}")
+                missing_assets.append(md5ext)
+        return missing_assets
 
     @staticmethod
     def extract_md5exts(node, seen=None):
@@ -496,8 +519,6 @@ class CLIDownloader(DownloadController):
         for p_index in range(len(self.projects)):
             print("\n")
             self.download_project(p_index)
-            # sleep 3 seconds so scratch doesn't rate limit
-            t.sleep(3)
 
         print(f"\n{self.progress_bar_info['downloaded_projects']} / {self.progress_bar_info['total_projects']} projects downloaded")
 
