@@ -1,38 +1,27 @@
-import main
-# Tkinter imports
-import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
-# import threading stuff to run the backend work
 from threading import Thread
-from queue import Queue
+import tkinter as tk
+from queue import Queue, Empty
 
-class ScrollableChecklist(tk.Frame):
+import customtkinter as ctk
+from PIL import Image
+
+from main import DownloadController
+
+ctk.set_default_color_theme("assets/scratch-theme.json")
+ctk.set_appearance_mode("system")
+
+# CUSTOM WIDGETS
+class ScrollableChecklist(ctk.CTkScrollableFrame):
     '''Create a list of checkbuttons that supports scrolling'''
     def __init__(self, master, items, **kwargs):
         super().__init__(master, **kwargs)
-        self.canvas = tk.Canvas(self)
-        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.frame = ttk.Frame(self.canvas)
-        
-        self.frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-        self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        
-        self.scrollbar.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
-
-        # Bind mousewheel scrolling only when mouse is over the widget
-        self.canvas.bind("<Enter>", self._bind_mousewheel)
-        self.canvas.bind("<Leave>", self._unbind_mousewheel)
-        
         self.items = items
         self.buttons = []
         # Populate with checkbuttons
         self.vars = []
-        self._make_checkbuttons(items)
+        self.make_checkbuttons(items)
 
-    def _make_checkbuttons(self, items):
+    def make_checkbuttons(self, items):
         # get rid of old buttons
         for button in self.buttons:
             button.destroy()
@@ -43,62 +32,33 @@ class ScrollableChecklist(tk.Frame):
         for i in range(len(self.items)):
             item = self.items[i]
             self.vars.append(tk.BooleanVar(value=False))
-            cb = ttk.Checkbutton(self.frame, text=item, variable=self.vars[i])
+            cb = ctk.CTkCheckBox(self, text=item, variable=self.vars[i])
             self.buttons.append(cb)
-            cb.pack(anchor="w")
-    
-    def _on_mousewheel(self, event):
-        if event.num == 4:
-            self.canvas.yview_scroll(-1, "units")
-        elif event.num == 5:
-            self.canvas.yview_scroll(1, "units")
-        else:
-            # Windows: delta is multiple of 120; macOS: delta is ±1 or more
-            if abs(event.delta) >= 120:
-                delta = int(-1 * (event.delta / 120))
-            else:
-                delta = -1 * event.delta
-            self.canvas.yview_scroll(delta, "units")
+            cb.pack(pady=2, anchor="w")
 
-    def _bind_mousewheel(self, event):
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-        self.canvas.bind_all("<Button-4>", self._on_mousewheel)
-        self.canvas.bind_all("<Button-5>", self._on_mousewheel)
+class CTkMessagebox(ctk.CTkToplevel):
+    def __init__(self, master : ctk.CTk, title, desc, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+        self.master = master
 
-    def _unbind_mousewheel(self, event):
-        self.canvas.unbind_all("<MouseWheel>")
-        self.canvas.unbind_all("<Button-4>")
-        self.canvas.unbind_all("<Button-5>")
+        x = master.winfo_x() + (master.winfo_width() // 2) - (300 // 2)
+        y = master.winfo_y() + (master.winfo_height() // 2) - (200 // 2)
+        self.geometry(f"300x200+{x}+{y}")
+        self.resizable(False, False)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
 
-# BACKEND STUFF
-download_controller = main.DownloadController()
+        self.title(title)
+        self.label = ctk.CTkLabel(self, text=desc, wraplength=250)
+        self.button = ctk.CTkButton(self, text="OK", command=self.destroy)
+        self.label.grid(row=0, column=0)
+        self.button.grid(row=1, column=0)
 
-def _validate_login(username, pw, q):
-    success = download_controller.validate_login(username, pw)
-    if not success:
-        q.put(lambda: messagebox.showerror(
-            "Login Failed",
-            "Try again. Try not to mess up many times or Scratch might flag you as a clanker."
-        ))
-        return
-    q.put(lambda: switch_to_project_select())
+        self.grab_set()
+        self.master.wait_window(self)
 
-def _get_project_list(filter_arg, q):
-    projects = download_controller.get_projects(filter_arg)
-    project_names = []
-    for project in projects:
-        project_names.append(project.title)
-    q.put(lambda: project_checklist._make_checkbuttons(project_names))
-
-def _download_project(p_index, q):
-    download = download_controller.download_project(p_index)
-    if not download:
-        q.put(lambda: print("Download failed"))
-        return
-    # Update progress bar of total projects downloaded
-    q.put(lambda: print("Download successful"))
-
-def check_queue():
+# SCREENS
+def check_queue(root : ctk.CTk, q : Queue):
     '''
     Checks the queue for callback functions from the backend tasks and runs it.
     This stops the GUI from waiting and freezing the screen.
@@ -106,158 +66,227 @@ def check_queue():
     try:
         callback = q.get_nowait()
         callback()
-    except:
-        root.after(100, check_queue)
+    except Empty:
+        root.after(100, lambda: check_queue(root, q))
 
-# GUI FUNCTIONS
-# Rudimentary screen switching
-def switch_to_project_select():
-    login_screen.pack_forget()
-    project_select_screen.pack()
+logo_pil = Image.open("assets/logo.png")
+logo_img = ctk.CTkImage(
+    light_image=logo_pil, dark_image=logo_pil, size=(200, 200)
+)
 
-def switch_to_download():
-    project_select_screen.pack_forget()
-    download_screen.pack()
+class LoginScreen(ctk.CTkFrame):
+    def __init__(self, q, master = None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.q = q
 
-# Select all the projects in the list
-def select_all_projects():
-    for buttonvar in project_checklist.vars:
-        buttonvar.set(True)
-    project_selectall_button.config(text="Deselect all", command=deselect_all_projects)
+        self.logo_label = ctk.CTkLabel(self, image=logo_img, text="")
+        self.user_label = ctk.CTkLabel(self, font=master.bold_font, text="Username")
+        self.user_entry = ctk.CTkEntry(self, width=204, height=38)
+        self.pw_label = ctk.CTkLabel(self, font=master.bold_font, text="Password")
+        self.pw_entry = ctk.CTkEntry(self, width=204, height=38, show="*")
+        self.login_button = ctk.CTkButton(
+            self, font=master.bold_font, text="Sign in",
+            width=62, height=43,
+            command=self.validate_login
+        )
 
-# Deselect the projects in the list
-def deselect_all_projects():
-    for buttonvar in project_checklist.vars:
-        buttonvar.set(False)
-    project_selectall_button.config(text="Select all", command=select_all_projects)
+        self.logo_label.pack(pady=20)
+        self.user_label.pack(padx=20, pady=2)
+        self.user_entry.pack(padx=20, pady=(2, 25))
+        self.pw_label.pack(padx=20, pady=2)
+        self.pw_entry.pack(padx=20, pady=(2, 25))
+        self.login_button.pack(padx=20, pady=(10, 20))
 
-# Login validation
-def validate_login():
-    Thread(
-        target=_validate_login,
-        args=(user_entry.get(), pw_entry.get(),q),
-        daemon=True
-    ).start()
-    check_queue()
-
-# Get project list everytime filter is reselected and show in the checklist
-def get_project_list(filter_arg):
-    # Scroll the view back to the top instead of keeping current yview
-    project_checklist.canvas.yview_moveto(0.0)
-    Thread(
-        target=_get_project_list,
-        args=(filter_arg, q),
-        daemon=True
-    ).start()
-    check_queue()
-
-def get_selected_projects():
-    selected = []
-    # Loop through the buttons list
-    # and the corresponding list of BooleanVars to see which are selected
-    for i in range(len(project_checklist.buttons)):
-        checked_val = project_checklist.vars[i].get()
-        if checked_val:
-            selected.append(i)
-            # For debugging: prints the selected projects' titles
-            # print(project_checklist.buttons[i].cget("text"))
-
-    # Returns the indexes of the selected projects
-    return selected
-
-def download_selected_projects():
-    selected = get_selected_projects()
-    total_projects = len(selected)
-    step_val = 100 * 1 / total_projects
-
-    switch_to_download()
-    all_download_label.config(
-        text=f"0 / {total_projects} projects downloaded"
-    )
-
-    for i in range(total_projects):
-        p_index = selected[i]
+    def validate_login(self):
+        if self.master is None:
+            return
         Thread(
-            target=_download_project,
-            args=(p_index, q),
+            target=self.master.validate_login,
+            args=(self.user_entry.get(), self.pw_entry.get()),
             daemon=True
         ).start()
-        check_queue()
+        check_queue(self.master, self.q)
 
-# MAIN WINDOW
-root = tk.Tk()
-root.title("SB3 Bulk Downloader")
-root.geometry("960x720")
+class ProjectSelectScreen(ctk.CTkFrame):
+    def __init__(self, q, master = None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.q = q
 
-q = Queue()
+        self.project_opts = ["all", "shared", "unshared"]
+        self.project_label = ctk.CTkLabel(self, font=master.bold_font, text="Projects to Download")
 
-# LOGIN SCREEN
-login_screen = ttk.Frame()
-user_label = ttk.Label(login_screen, text="Username:")
-user_entry = ttk.Entry(login_screen)
-pw_label = ttk.Label(login_screen, text="Password:")
-pw_entry = ttk.Entry(login_screen, show="*")
-login_button = ttk.Button(
-    login_screen, text="Login",
-    command=validate_login
-)
+        self.project_filtervar = tk.StringVar(value="Sort by")
+        self.project_optmenu = ctk.CTkOptionMenu(self, variable=self.project_filtervar, values=self.project_opts, width=121, height=46)
+        self.project_filtervar.trace_add("write", lambda *args: self.get_project_list(self.project_filtervar.get()))
 
-user_label.pack(pady=5)
-user_entry.pack(pady=5)
-pw_label.pack(pady=5)
-pw_entry.pack(pady=5)
-login_button.pack(pady=10)
+        self.project_selectall_button = ctk.CTkButton(self, command=self.select_all_projects, font=master.bold_font, text="Select all", width=84, height=31)
 
-# PROJECT SELECT
-project_select_screen = ttk.Frame()
-project_opts = ["Select an option", "all", "shared", "unshared"]
-project_label = ttk.Label(project_select_screen, text="Projects to Download")
+        self.project_checklist = ScrollableChecklist(self, [], width=300)
+        self.download_button = ctk.CTkButton(
+            self, font=master.bold_font, text="Download selected",
+            command=self.download_selected_projects,
+            width=84, height=31
+        )
 
-project_filtervar = tk.StringVar(value="Select an option")
-project_optmenu = ttk.OptionMenu(project_select_screen, project_filtervar, *project_opts)
-project_filtervar.trace_add("write", lambda *args: get_project_list(project_filtervar.get()))
+        self.project_label.pack(padx=20, pady=20)
+        self.project_optmenu.pack(padx=20, pady=10)
+        self.project_selectall_button.pack(padx=20, pady=(0, 10))
+        self.project_checklist.pack(padx=20, fill="y", expand=True)
+        self.download_button.pack(padx=20, pady=20)
 
-project_selectall_button = ttk.Button(project_select_screen, command=select_all_projects, text="Select all")
+    # Select all the projects in the list
+    def select_all_projects(self):
+        for buttonvar in self.project_checklist.vars:
+            buttonvar.set(True)
+        self.project_selectall_button.configure(text="Deselect all", command=self.deselect_all_projects)
 
-project_checklist = ScrollableChecklist(project_select_screen, [])
-download_button = ttk.Button(
-    project_select_screen, text="Download Selected",
-    command=download_selected_projects
-)
+    # Deselect the projects in the list
+    def deselect_all_projects(self):
+        for buttonvar in self.project_checklist.vars:
+            buttonvar.set(False)
+        self.project_selectall_button.configure(text="Select all", command=self.select_all_projects)
 
-project_label.pack()
-project_optmenu.pack()
-project_selectall_button.pack()
-project_checklist.pack(fill="y", expand=True)
-download_button.pack()
+    def download_selected_projects(self):
+        if self.master is None:
+            return
+        if total_projects == 0:
+            return
+        
+        selected = self.get_selected_projects()
+        total_projects = len(selected)
+        step_val = 100 * 1 / total_projects
 
-# DOWNLOADING SCREEN
-download_screen = ttk.Frame()
-# progress bar for current project
-cur_download_progress = ttk.Progressbar(
-    download_screen, orient="horizontal", length=500, mode="determinate"
-)
-# progress bar for all projects
-all_download_progress = ttk.Progressbar(
-    download_screen, orient="horizontal", length=500, mode="determinate"
-)
-# labels for progress
-cur_download_label = ttk.Label(
-    download_screen,
-    text="Currently downloading [asset title], [num] / [total] assets downloaded"
-)
-all_download_label = ttk.Label(
-    download_screen,
-    text="Currently downloading [project title], [num] / [total] projects downloaded"
-)
+        self.master.switch_screen(self.master.download_screen)
+        self.master.download_screen.download_selected_projects(selected, total_projects, step_val)
 
-cur_download_progress.pack()
-cur_download_label.pack()
-all_download_progress.pack()
-all_download_label.pack()
+    def get_selected_projects(self):
+        selected = []
+        # Loop through the buttons list
+        # and the corresponding list of BooleanVars to see which are selected
+        for i in range(len(self.project_checklist.buttons)):
+            checked_val = self.project_checklist.vars[i].get()
+            if checked_val:
+                selected.append(i)
+                # For debugging: prints the selected projects' titles
+                # print(project_checklist.buttons[i].cget("text"))
 
-# GEOMETRY MANAGER
-login_screen.pack()
+        # Returns the indexes of the selected projects
+        return selected
+    
+    def get_project_list(self, filter_arg):
+        if self.master is None:
+            return
+        
+        # print(filter_arg)
+        # Scroll the view back to the top instead of keeping current yview
+        self.project_checklist._parent_canvas.yview_moveto(0)
+        Thread(
+            target=self.master.get_project_list,
+            args=(filter_arg,),
+            daemon=True
+        ).start()
+        check_queue(self.master, self.q)
 
-# APPLICATION EVENT LOOP
+class DownloadScreen(ctk.CTkFrame):
+    def __init__(self, q, master = None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.q = q
+        
+        # TODO: change progresbar set() values to be between 0.0 to 1.0 instead of 0 to 100
+        self.screen_label = ctk.CTkLabel(
+            self, font=master.bold_font,
+            text="Download in Progress"
+        )
+        # progress bar for current project
+        self.cur_download_progress = ctk.CTkProgressBar(
+            self, orientation="horizontal",
+            width=500, height=40
+        )
+        # progress bar for all projects
+        self.all_download_progress = ctk.CTkProgressBar(
+            self, orientation="horizontal",
+            width=500, height=40
+        )
+        # labels for progress
+        self.cur_download_label = ctk.CTkLabel(
+            self,
+            text="Currently downloading [asset title], [num] / [total] assets downloaded"
+        )
+        self.all_download_label = ctk.CTkLabel(
+            self,
+            text="Currently downloading [project title], [num] / [total] projects downloaded"
+        )
+        self.screen_label.pack(padx=20, pady=20)
+        self.cur_download_progress.pack(padx=20, pady=(20, 2))
+        self.cur_download_label.pack(padx=20)
+        self.all_download_progress.pack(padx=20, pady=(30, 2))
+        self.all_download_label.pack(padx=20)
+
+    def download_selected_projects(self, selected, total_projects, step_val):
+        self.all_download_label.configure(
+            text=f"0 / {total_projects} projects downloaded"
+        )
+
+        for i in range(total_projects):
+            p_index = selected[i]
+            Thread(
+                target=self.master.download_project,
+                args=(p_index,),
+                daemon=True
+            ).start()
+            check_queue(self.master, self.q)
+
+# GUI APP
+class AppGUI(ctk.CTk):
+    def __init__(self, fg_color = None, **kwargs):
+        super().__init__(fg_color, **kwargs)
+
+        ctk.FontManager.load_font("assets/texgyreheros.gyreheros-regular.otf")
+        self.bold_font = ctk.CTkFont(family="TeXGyreHeros", size=13, weight="bold")
+
+        self.title("SB3 Bulk Downloader")
+        w = 960
+        h = 720
+        x = (self.winfo_screenwidth() // 2) - (w // 2)
+        y = (self.winfo_screenheight() // 2) - (h // 2)
+        self.geometry(f"{w}x{h}+{x}+{y}")
+
+        self.download_controller = DownloadController()
+        self.q = Queue()
+
+        self.login_screen = LoginScreen(self.q, self)
+        self.project_select_screen = ProjectSelectScreen(self.q, self)
+        self.download_screen = DownloadScreen(self.q, self)
+
+        self.current_screen = self.login_screen
+        self.current_screen.place(relx=0.5, rely=0.5, anchor="center")
+
+    def switch_screen(self, new_screen : ctk.CTkFrame):
+        self.current_screen.place_forget()
+        self.current_screen = new_screen
+        new_screen.place(relx=0.5, rely=0.5, anchor="center")
+
+    def validate_login(self, username, pw):
+        success = self.download_controller.validate_login(username, pw)
+        if not success:
+            self.q.put(lambda: CTkMessagebox(self, "Login Failed", "Try again. Try not to mess up many times or Scratch might flag you as a clanker."))
+            return
+        self.q.put(lambda: self.switch_screen(self.project_select_screen))
+
+    def get_project_list(self, filter_arg):
+        projects = self.download_controller.get_projects(filter_arg)
+        project_names = []
+        for project in projects:
+            project_names.append(project.title)
+        self.q.put(lambda: self.project_select_screen.project_checklist.make_checkbuttons(project_names))
+
+    def download_project(self, p_index):
+        download = self.download_controller.download_project(p_index)
+        if not download:
+            self.q.put(lambda: print("Download failed"))
+            return
+        # Update progress bar of total projects downloaded
+        self.q.put(lambda: print("Download successful"))
+
+root = AppGUI()
 root.mainloop()
