@@ -69,7 +69,9 @@ class DownloadController:
         while True:
             try: 
                 projects = self.session.mystuff_projects(filter_arg, page=pagenum, sort_by="")
+                print(f"Found {len(projects)} projects on page {pagenum} with filter '{filter_arg}'")
                 self.projects += projects
+                print(f"Current amount of projects so far: {len(self.projects)}")
             except Exception as e:
                 # print("the thing broke here's your error:", e)
                 # traceback.print_exc()
