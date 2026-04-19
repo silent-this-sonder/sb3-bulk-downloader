@@ -32,9 +32,9 @@ jobs:
             artifact_path: "sb3-bulk-downloader-windows.exe"
           - os: macos-latest
             os_name: macos
-            exe_ext: ".app"
+            exe_ext: ""
             nuitka_mode: "--macos-create-app-bundle"
-            run_cmd: "./sb3-bulk-downloader-macos.app"
+            run_cmd: "./sb3-bulk-downloader-macos.app/Contents/MacOS/sb3-bulk-downloader-macos"
             artifact_path: "sb3-bulk-downloader-macos.app"
 
     steps:
@@ -69,21 +69,17 @@ jobs:
           cmd = sys.argv[1]
           print(f"Launching {cmd}...")
           
-          if sys.platform == "darwin":
-              p = subprocess.Popen(["open", cmd])
-          else:
-              p = subprocess.Popen([cmd])
+          p = subprocess.Popen([cmd])
            
           time.sleep(40)
           
           if sys.platform == "darwin":
               print("mac sucks")
               subprocess.run(['screencapture', '-x', '${{ matrix.os }}.png'])
-              subprocess.run(['killall', 'gui'])
           else: 
               pyautogui.screenshot('${{ matrix.os }}.png')
-              p.terminate()
               
+          p.terminate()
           EOF
 
       - name: Run App & Capture Screen (Linux)

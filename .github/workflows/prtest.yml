@@ -28,9 +28,9 @@ jobs:
             artifact_path: "sb3-bulk-downloader-windows.exe"
           - os: macos-latest
             os_name: macos
-            exe_ext: ".app"
+            exe_ext: ""
             nuitka_mode: "--macos-create-app-bundle"
-            run_cmd: "open -n -W ./sb3-bulk-downloader-macos.app"
+            run_cmd: "./sb3-bulk-downloader-macos.app/Contents/MacOS/sb3-bulk-downloader-macos"
             artifact_path: "sb3-bulk-downloader-macos.app"
     
     steps:
@@ -67,23 +67,17 @@ jobs:
           cmd = sys.argv[1]
           print(f"Launching {cmd}...")
           
-          if sys.platform == "darwin":
-              # For macOS, we use subprocess to open the app and wait
-              # but since it's an app bundle, we'll let it launch, wait, then screenshot
-              p = subprocess.Popen(["open", cmd.replace("open -n -W ", "").strip()])
-          else:
-              p = subprocess.Popen([cmd])
+          p = subprocess.Popen([cmd])
           
           time.sleep(40)
           
           if sys.platform == "darwin":
             print("mac sucks")
             subprocess.run(['screencapture', '-x', 'macos-latest.png'])
-            # Attempt to kill the macOS app cleanly
-            subprocess.run(['killall', 'gui'])
           else: 
             pyautogui.screenshot('${{ matrix.os }}.png')
-            p.terminate()
+            
+          p.terminate()
           EOF
           
       - name: Run App & Capture Screen (Linux)
