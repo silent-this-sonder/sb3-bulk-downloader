@@ -8,7 +8,9 @@ That program is this: it will help you quickly download all your projects from y
 ## Walkthrough
 
 ### Installation
-todo
+1. Go to [Releases](https://github.com/silent-this-sonder/sb3-bulk-downloader/releases/tag/v1.0.0).
+2. Install the version corresponding to your operating system.
+3. Run the app. (Note: antiviruses may flag it as a false positive; rest assured it is completely safe.)
 
 ### Usage
 There are two ways to use SB3 Bulk Downloader: the CLI or the GUI.
