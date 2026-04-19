@@ -64,15 +64,18 @@ jobs:
           import subprocess, time, pyautogui, sys, os
           import shlex
           import glob
+          import plistlib
           
           cmd = sys.argv[1]
           if sys.platform == "darwin":
               app_bundles = glob.glob("*.app")
               if app_bundles:
                   app_bundle = app_bundles[0]
-                  macos_dir = os.path.join(app_bundle, 'Contents', 'MacOS')
-                  binaries = [f for f in os.listdir(macos_dir) if not f.startswith('.') and not f.endswith(('.so', '.dylib'))]
-                  cmd = './' + os.path.join(macos_dir, binaries[0])
+                  plist_path = os.path.join(app_bundle, 'Contents', 'Info.plist')
+                  with open(plist_path, 'rb') as f:
+                      plist = plistlib.load(f)
+                  exe_name = plist.get('CFBundleExecutable')
+                  cmd = './' + os.path.join(app_bundle, 'Contents', 'MacOS', exe_name)
               else:
                   print("No .app bundle found!")
                   sys.exit(1)
