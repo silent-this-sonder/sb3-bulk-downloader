@@ -32,7 +32,7 @@ jobs:
             artifact_path: "sb3-bulk-downloader-windows.exe"
           - os: macos-latest
             os_name: macos
-            exe_ext: ""
+            exe_ext: ".app"
             nuitka_mode: "--macos-create-app-bundle"
             run_cmd: "./sb3-bulk-downloader-macos.app"
             artifact_path: "sb3-bulk-downloader-macos.app"
