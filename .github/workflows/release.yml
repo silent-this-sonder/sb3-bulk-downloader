@@ -81,8 +81,8 @@ jobs:
 
       - name: Compile with Nuitka
         run: |
-          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
-
+          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} --macos-app-name=sb3-bulk-downloader-macos gui.py
+          
       - name: Create Screenshot Runner Script
         shell: bash
         run: |
