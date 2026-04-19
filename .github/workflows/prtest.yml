@@ -71,7 +71,7 @@ jobs:
               if app_bundles:
                   app_bundle = app_bundles[0]
                   macos_dir = os.path.join(app_bundle, 'Contents', 'MacOS')
-                  binaries = [f for f in os.listdir(macos_dir) if not f.startswith('.')]
+                  binaries = [f for f in os.listdir(macos_dir) if not f.startswith('.') and not f.endswith(('.so', '.dylib'))]
                   cmd = './' + os.path.join(macos_dir, binaries[0])
               else:
                   print("No .app bundle found!")
