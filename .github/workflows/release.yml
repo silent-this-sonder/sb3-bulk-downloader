@@ -2,7 +2,7 @@ name: Interactive Issue Release
 
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened]
 
 # Only run if the issue title starts with "New Release"
 jobs:
