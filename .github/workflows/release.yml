@@ -339,5 +339,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUM: ${{ github.event.issue.number }}
         run: |
-          gh issue comment $ISSUE_NUM --body "✅ **Release Published Successfully!** Closing this issue. 💡🔨🎓"
+          gh issue comment $ISSUE_NUM --body $'# ✅ Release Published Successfully! Closing this issue.\n 💡🔨🎓 :shipit: <img width="360" height="338" alt="image" src="https://github.com/user-attachments/assets/0363f8b4-085a-4d24-94d7-38e2f693e0e6" />'
           gh issue close $ISSUE_NUM --reason completed
