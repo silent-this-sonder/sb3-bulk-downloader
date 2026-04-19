@@ -129,10 +129,12 @@ jobs:
         if: runner.os != 'Linux'
         shell: bash
         run: python runner.py "${{ matrix.run_cmd }}"
-
+      
       - name: Tar macOS App
         if: runner.os == 'macOS'
-        run: tar -czf sb3-bulk-downloader-macos.app.tar.gz sb3-bulk-downloader-macos.app
+        run: |
+          mv gui.app sb3-bulk-downloader-macos.app
+          tar -czf sb3-bulk-downloader-macos.app.tar.gz sb3-bulk-downloader-macos.app
 
       - name: Upload Executable Artifact
         uses: actions/upload-artifact@v4
