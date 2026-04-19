@@ -43,9 +43,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install Dependencies
-        run: |zstandard 
+        run: |
           python -m pip install --upgrade pip
-          pip install "nuitka[onefile]" pyautogui pillow requests scratchattach customtkinter
+          pip install zstandard "nuitka[onefile]" pyautogui pillow requests scratchattach customtkinter
 
       - name: Install Linux-specific packages
         if: runner.os == 'Linux'
