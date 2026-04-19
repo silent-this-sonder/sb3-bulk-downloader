@@ -7,6 +7,22 @@ on:
 # Only run if the issue title starts with "New Release"
 jobs:
   # ─────────────────────────────────────────────────────────────────
+  # 0. UNAUTHORIZED USER HANDLER
+  # ─────────────────────────────────────────────────────────────────
+  unauthorized-user:
+    if: startsWith(github.event.issue.title, 'New Release') && !contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+    name: Comment on Unauthorized Release Request
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Post denial comment
+        env:
+          ISSUE_NUM: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUM" --body "🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️You don't have permission to make releases!!!!11!!1!1!11 🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️"
+
+  # ─────────────────────────────────────────────────────────────────
   # 1. BUILD & SCREENSHOT
   # ─────────────────────────────────────────────────────────────────
   build-and-screenshot:
@@ -212,6 +228,7 @@ jobs:
           REPO: ${{ github.repository }}
           BODY: ${{ github.event.issue.body }}
           TAG: ${{ steps.version.outputs.tag }}
+          AUTHOR: ${{ github.event.issue.user.login }}
         run: |
           BASE_URL="https://raw.githubusercontent.com/$REPO/screenshots/issue-$ISSUE_NUM"
           
@@ -219,6 +236,8 @@ jobs:
           
           cat <<EOF > /tmp/comment.md
           🤖 **Build Complete! Nuitka compilation was successful across all 3 platforms.**
+          
+          @${AUTHOR}, please review the details below, and approve or cancel within an hour to proceed with the release.
           
           ### Screenshots Table
           
@@ -240,7 +259,7 @@ jobs:
           
           ---
           ### 🛑 Approval Required
-          Check one of the boxes below to proceed. (The workflow is actively polling this comment).
+          Check one of the boxes below to proceed:
           
           - [ ] **Cancel** (Aborts the release)
           - [ ] **Continue with release** (Publishes binaries and closes this issue)
@@ -256,7 +275,7 @@ jobs:
             # Check for both [x] and [X] to be safe
             if echo "$CURRENT_BODY" | grep -qE "\[[xX]\] \*\*Cancel\*\*"; then
               echo "User canceled the release."
-              gh issue comment $ISSUE_NUM --body "🛑 Release process was cancelled by the user. Workflow terminated."
+              gh issue comment $ISSUE_NUM --body "🛑 Release process was cancelled by the user 😔😔😔😟"
               exit 1
             fi
             
@@ -320,5 +339,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUM: ${{ github.event.issue.number }}
         run: |
-          gh issue comment $ISSUE_NUM --body "✅ **Release Published Successfully!** Closing this ticket."
+          gh issue comment $ISSUE_NUM --body "✅ **Release Published Successfully!** Closing this issue. 💡🔨🎓"
           gh issue close $ISSUE_NUM --reason completed
