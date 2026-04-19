@@ -34,7 +34,7 @@ jobs:
             os_name: macos
             exe_ext: ""
             nuitka_mode: "--macos-create-app-bundle"
-            run_cmd: "./sb3-bulk-downloader-macos.app/Contents/MacOS/sb3-bulk-downloader-macos"
+            run_cmd: "./sb3-bulk-downloader-macos.app"
             artifact_path: "sb3-bulk-downloader-macos.app"
 
     steps:
@@ -67,6 +67,10 @@ jobs:
           import subprocess, time, pyautogui, sys, os
           
           cmd = sys.argv[1]
+          if cmd.endswith('.app'):
+              macos_dir = os.path.join(cmd, 'Contents', 'MacOS')
+              cmd = os.path.join(macos_dir, os.listdir(macos_dir)[0])
+              
           print(f"Launching {cmd}...")
           
           p = subprocess.Popen([cmd])
