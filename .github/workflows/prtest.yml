@@ -7,6 +7,8 @@ on:
 jobs:
   screenshot:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -15,24 +17,35 @@ jobs:
           - os: ubuntu-latest
             os_name: linux
             exe_ext: ""
+            nuitka_mode: "--onefile"
+            run_cmd: "./sb3-bulk-downloader-linux"
+            artifact_path: "sb3-bulk-downloader-linux"
           - os: windows-latest
             os_name: windows
             exe_ext: ".exe"
+            nuitka_mode: "--onefile"
+            run_cmd: "./sb3-bulk-downloader-windows.exe"
+            artifact_path: "sb3-bulk-downloader-windows.exe"
           - os: macos-latest
             os_name: macos
-            exe_ext: ""
+            exe_ext: ".app"
+            nuitka_mode: "--macos-create-app-bundle"
+            run_cmd: "open -n -W ./sb3-bulk-downloader-macos.app"
+            artifact_path: "sb3-bulk-downloader-macos.app"
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install Dependencies
-        run: |
+        run: |zstandard 
           python -m pip install --upgrade pip
-          pip install nuitka pyautogui pillow requests scratchattach customtkinter
+          pip install "nuitka[onefile]" pyautogui pillow requests scratchattach customtkinter
 
       - name: Install Linux-specific packages
         if: runner.os == 'Linux'
@@ -42,34 +55,46 @@ jobs:
 
       - name: Compile with Nuitka
         run: |
-          python -m nuitka --onefile --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
+          python -m nuitka --assume-yes-for-downloads ${{ matrix.nuitka_mode }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
 
       - name: Create Screenshot Runner Script
         shell: bash
         run: |
           cat << 'EOF' > runner.py
           import subprocess, time, pyautogui, sys, os
-          exe_path = sys.argv[1]
-          print(f"Launching {exe_path}...")
-          p = subprocess.Popen([exe_path])
+          import shlex
+          
+          cmd = sys.argv[1]
+          print(f"Launching {cmd}...")
+          
+          if sys.platform == "darwin":
+              # For macOS, we use subprocess to open the app and wait
+              # but since it's an app bundle, we'll let it launch, wait, then screenshot
+              p = subprocess.Popen(["open", cmd.replace("open -n -W ", "").strip()])
+          else:
+              p = subprocess.Popen([cmd])
+          
           time.sleep(40)
+          
           if sys.platform == "darwin":
             print("mac sucks")
             subprocess.run(['screencapture', '-x', 'macos-latest.png'])
+            # Attempt to kill the macOS app cleanly
+            subprocess.run(['killall', 'gui'])
           else: 
             pyautogui.screenshot('${{ matrix.os }}.png')
-          p.terminate()
+            p.terminate()
           EOF
           
       - name: Run App & Capture Screen (Linux)
         if: runner.os == 'Linux'
         shell: bash
-        run: xvfb-run --auto-servernum python runner.py ./sb3-bulk-downloader-linux
+        run: xvfb-run --auto-servernum python runner.py "${{ matrix.run_cmd }}"
 
       - name: Run App & Capture Screen (Windows/Mac)
         if: runner.os != 'Linux'
         shell: bash
-        run: python runner.py ./sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }}
+        run: python runner.py "${{ matrix.run_cmd }}"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -99,7 +124,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
   
           if git fetch origin screenshots 2>/dev/null; then
-            git checkout screenshots
+            git checkout -B screenshots FETCH_HEAD
           else
             git checkout --orphan screenshots
             git rm -rf . --quiet || true
@@ -109,7 +134,7 @@ jobs:
           cp /tmp/screenshots/*.png pr-${{ github.event.pull_request.number }}/
           git add pr-${{ github.event.pull_request.number }}
           git diff --staged --quiet || git commit -m "screenshots: PR #${{ github.event.pull_request.number }} [skip ci]"
-          git push origin screenshots
+          git push origin HEAD:refs/heads/screenshots
   
       - uses: peter-evans/find-comment@v3
         id: fc
