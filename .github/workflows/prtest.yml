@@ -7,46 +7,120 @@ on:
 jobs:
   screenshot:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            os_name: linux
+            exe_ext: ""
+            nuitka_mode: "--onefile"
+            run_cmd: "./sb3-bulk-downloader-linux"
+            artifact_path: "sb3-bulk-downloader-linux"
+            icon_arg: "--linux-icon=assets/icon.png"
+          - os: windows-latest
+            os_name: windows
+            exe_ext: ".exe"
+            nuitka_mode: "--onefile"
+            run_cmd: "./sb3-bulk-downloader-windows.exe"
+            artifact_path: "sb3-bulk-downloader-windows.exe"
+            icon_arg: "--windows-icon-from-ico=assets/icon.ico"
+          - os: macos-latest
+            os_name: macos
+            exe_ext: ""
+            nuitka_mode: "--mode=app"
+            run_cmd: "sb3-bulk-downloader-macos"
+            artifact_path: "sb3-bulk-downloader-macos.app"
+            icon_arg: "--macos-app-icon=assets/icon.icns"
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
-      - run: |
+      - name: Cache Nuitka
+        uses: actions/cache@v4
+        with:
+          path: .nuitka-cache
+          key: ${{ runner.os }}-nuitka-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nuitka-
+
+      - name: Install Dependencies
+        run: |
           python -m pip install --upgrade pip
-          pip install pyautogui pillow requests scratchattach customtkinter
+          pip install zstandard "nuitka[onefile]" pyautogui pillow requests scratchattach customtkinter imageio
 
-      - if: runner.os == 'Linux'
+      - name: Generate OS-specific App Icons
+        run: |
+          python -c "from PIL import Image; import sys; img = Image.open('assets/logo.png'); img.save('assets/icon.ico', format='ICO', sizes=[(256, 256)]) if sys.platform == 'win32' else img.save('assets/icon.icns', format='ICNS') if sys.platform == 'darwin' else img.save('assets/icon.png')"
+
+      - name: Install Linux-specific packages
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot
+          sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache
 
-      - shell: bash
+      - name: Compile with Nuitka
+        env:
+          NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
+        run: |
+          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
+
+      - name: Create Screenshot Runner Script
+        shell: bash
         run: |
           cat << 'EOF' > runner.py
           import subprocess, time, pyautogui, sys, os
-          p = subprocess.Popen([sys.executable, 'gui.py'])
+          import shlex
+          import glob
+          import plistlib
+          
+          cmd = sys.argv[1]
+          if sys.platform == "darwin":
+              app_bundles = glob.glob("*.app")
+              if app_bundles:
+                  app_bundle = app_bundles[0]
+                  plist_path = os.path.join(app_bundle, 'Contents', 'Info.plist')
+                  with open(plist_path, 'rb') as f:
+                      plist = plistlib.load(f)
+                  exe_name = plist.get('CFBundleExecutable')
+                  cmd = './' + os.path.join(app_bundle, 'Contents', 'MacOS', exe_name)
+              else:
+                  print("No .app bundle found!")
+                  sys.exit(1)
+          
+          print(f"Launching {cmd}...")
+          
+          p = subprocess.Popen([cmd])
+          
           time.sleep(40)
+          
           if sys.platform == "darwin":
             print("mac sucks")
             subprocess.run(['screencapture', '-x', 'macos-latest.png'])
           else: 
             pyautogui.screenshot('${{ matrix.os }}.png')
+            
           p.terminate()
           EOF
           
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            xvfb-run --auto-servernum python runner.py
-          else
-            python runner.py
-          fi
+      - name: Run App & Capture Screen (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: xvfb-run --auto-servernum python runner.py "${{ matrix.run_cmd }}"
+
+      - name: Run App & Capture Screen (Windows/Mac)
+        if: runner.os != 'Linux'
+        shell: bash
+        run: python runner.py "${{ matrix.run_cmd }}"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -76,7 +150,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
   
           if git fetch origin screenshots 2>/dev/null; then
-            git checkout screenshots
+            git checkout -B screenshots FETCH_HEAD
           else
             git checkout --orphan screenshots
             git rm -rf . --quiet || true
@@ -86,7 +160,7 @@ jobs:
           cp /tmp/screenshots/*.png pr-${{ github.event.pull_request.number }}/
           git add pr-${{ github.event.pull_request.number }}
           git diff --staged --quiet || git commit -m "screenshots: PR #${{ github.event.pull_request.number }} [skip ci]"
-          git push origin screenshots
+          git push origin HEAD:refs/heads/screenshots
   
       - uses: peter-evans/find-comment@v3
         id: fc

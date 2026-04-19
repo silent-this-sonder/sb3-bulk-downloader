@@ -1,0 +1,343 @@
+name: Interactive Issue Release
+
+on:
+  issues:
+    types: [opened]
+
+# Only run if the issue title starts with "New Release"
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # 0. UNAUTHORIZED USER HANDLER
+  # ─────────────────────────────────────────────────────────────────
+  unauthorized-user:
+    if: startsWith(github.event.issue.title, 'New Release') && !contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+    name: Comment on Unauthorized Release Request
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Post denial comment
+        env:
+          ISSUE_NUM: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUM" --body "🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️You don't have permission to make releases!!!!11!!1!1!11 🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️🚨🚨🚨🚨🚨🚨🚨🚨🚨⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️"
+
+  # ─────────────────────────────────────────────────────────────────
+  # 1. BUILD & SCREENSHOT
+  # ─────────────────────────────────────────────────────────────────
+  build-and-screenshot:
+    if: startsWith(github.event.issue.title, 'New Release') && contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+    name: Build & Screen (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            os_name: linux
+            exe_ext: ""
+            nuitka_mode: "--onefile"
+            run_cmd: "./sb3-bulk-downloader-linux"
+            artifact_path: "sb3-bulk-downloader-linux"
+            icon_arg: "--linux-icon=assets/icon.png"
+          - os: windows-latest
+            os_name: windows
+            exe_ext: ".exe"
+            nuitka_mode: "--onefile"
+            run_cmd: "./sb3-bulk-downloader-windows.exe"
+            artifact_path: "sb3-bulk-downloader-windows.exe"
+            icon_arg: "--windows-icon-from-ico=assets/icon.ico"
+          - os: macos-latest
+            os_name: macos
+            exe_ext: ""
+            nuitka_mode: "--mode=app"
+            run_cmd: "sb3-bulk-downloader-macos"
+            artifact_path: "sb3-bulk-downloader-macos.app"
+            icon_arg: "--macos-app-icon=assets/icon.icns"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Build & OS Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install zstandard "nuitka[onefile]" customtkinter requests scratchattach Pillow pyautogui imageio
+
+      - name: Generate OS-specific App Icons
+        run: |
+          python -c "from PIL import Image; import sys; img = Image.open('assets/logo.png'); img.save('assets/icon.ico', format='ICO', sizes=[(256, 256)]) if sys.platform == 'win32' else img.save('assets/icon.icns', format='ICNS') if sys.platform == 'darwin' else img.save('assets/icon.png')"
+
+      - name: Install Linux-specific packages
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache
+
+      - name: Compile with Nuitka
+        run: |
+          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
+
+      - name: Create Screenshot Runner Script
+        shell: bash
+        run: |
+          cat << 'EOF' > runner.py
+          import subprocess, time, pyautogui, sys, os
+          import glob
+          import plistlib
+          
+          cmd = sys.argv[1]
+          if sys.platform == "darwin":
+              app_bundles = glob.glob("*.app")
+              if app_bundles:
+                  app_bundle = app_bundles[0]
+                  plist_path = os.path.join(app_bundle, 'Contents', 'Info.plist')
+                  with open(plist_path, 'rb') as f:
+                      plist = plistlib.load(f)
+                  exe_name = plist.get('CFBundleExecutable')
+                  cmd = './' + os.path.join(app_bundle, 'Contents', 'MacOS', exe_name)
+              else:
+                  print("No .app bundle found!")
+                  sys.exit(1)
+              
+          print(f"Launching {cmd}...")
+          
+          p = subprocess.Popen([cmd])
+           
+          time.sleep(40)
+          
+          if sys.platform == "darwin":
+              print("mac sucks")
+              subprocess.run(['screencapture', '-x', '${{ matrix.os }}.png'])
+          else: 
+              pyautogui.screenshot('${{ matrix.os }}.png')
+              
+          p.terminate()
+          EOF
+
+      - name: Run App & Capture Screen (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: xvfb-run --auto-servernum python runner.py "${{ matrix.run_cmd }}"
+
+      - name: Run App & Capture Screen (Windows/Mac)
+        if: runner.os != 'Linux'
+        shell: bash
+        run: python runner.py "${{ matrix.run_cmd }}"
+
+      - name: Tar macOS App
+        if: runner.os == 'macOS'
+        run: tar -czf sb3-bulk-downloader-macos.app.tar.gz sb3-bulk-downloader-macos.app
+
+      - name: Upload Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os_name }}
+          path: |
+            sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }}
+            sb3-bulk-downloader-macos.app.tar.gz
+
+      - name: Upload Screenshot Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-${{ matrix.os }}
+          path: ${{ matrix.os }}.png
+
+
+  # ─────────────────────────────────────────────────────────────────
+  # 2. POST PREVIEW COMMENT & POLL FOR APPROVAL
+  # ─────────────────────────────────────────────────────────────────
+  interactive-approval:
+    needs: build-and-screenshot
+    name: Request Approval in Issue
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+    timeout-minutes: 60 
+    outputs:
+      decision: ${{ steps.poll.outputs.decision }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Determine Version Tag
+        id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE=$(jq -r '.issue.title // ""' "$GITHUB_EVENT_PATH")
+          # Try to find vX.Y.Z in the title
+          TAG=$(echo "$TITLE" | grep -oP 'v\d+\.\d+\.\d+' || echo "")
+          
+          if [ -z "$TAG" ]; then
+            echo "No version found in title. Fetching latest release to auto-increment..."
+            LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "v0.0.0")
+            # If no releases exist, start at v1.0.0
+            if [ "$LATEST" == "v0.0.0" ] || [ -z "$LATEST" ]; then
+              TAG="v1.0.0"
+            else
+              # Strip 'v' and increment patch
+              VERSION_PART="${LATEST#v}"
+              MAJOR=$(echo "$VERSION_PART" | cut -d. -f1)
+              MINOR=$(echo "$VERSION_PART" | cut -d. -f2)
+              PATCH=$(echo "$VERSION_PART" | cut -d. -f3)
+              NEW_PATCH=$((PATCH + 1))
+              TAG="v$MAJOR.$MINOR.$NEW_PATCH"
+            fi
+          fi
+          
+          echo "Final Version Tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Download Screenshots
+        uses: actions/download-artifact@v4
+        with:
+          pattern: screenshot-*
+          path: /tmp/screenshots
+          merge-multiple: true
+
+      - name: Publish screenshots to dedicated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git fetch origin screenshots 2>/dev/null; then
+            git checkout -B screenshots FETCH_HEAD
+          else
+            git checkout --orphan screenshots
+            git rm -rf . --quiet || true
+          fi
+          
+          mkdir -p issue-${{ github.event.issue.number }}
+          cp /tmp/screenshots/*.png issue-${{ github.event.issue.number }}/
+          git add issue-${{ github.event.issue.number }}
+          git diff --staged --quiet || git commit -m "screenshots: Issue #${{ github.event.issue.number }} [skip ci]"
+          git push origin HEAD:refs/heads/screenshots
+
+      - name: Post Comment & Wait for Checkbox
+        id: poll
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUM: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          BODY: ${{ github.event.issue.body }}
+          TAG: ${{ steps.version.outputs.tag }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          BASE_URL="https://raw.githubusercontent.com/$REPO/screenshots/issue-$ISSUE_NUM"
+          
+          printf '%s' "$BODY" > /tmp/issue-body.md
+          
+          cat <<EOF > /tmp/comment.md
+          🤖 **Build Complete! Nuitka compilation was successful across all 3 platforms.**
+          
+          @${AUTHOR}, please review the details below, and approve or cancel within an hour to proceed with the release.
+          
+          ### Screenshots Table
+          
+          | OS | Screenshot |
+          |----|------------|
+          | <img width="12" height="12" alt="Ubuntu Logo" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu | <img src="$BASE_URL/ubuntu-latest.png" width="700" /> |
+          | <img width="12" height="12" alt="Windows Logo" src="https://github.com/user-attachments/assets/4da4c060-732a-4aaf-b080-6b8de0600c71" /> Windows | <img src="$BASE_URL/windows-latest.png" width="700" /> |
+          | <img width="12" height="12" alt="Apple Logo" src="https://github.com/user-attachments/assets/636ee068-b7a7-489d-a545-a616534900ed" /> MacOS | <img src="$BASE_URL/macos-latest.png" width="700" /> |
+          
+          ### 📝 Release Details Preview
+          **Target Version:** \`$TAG\`
+          **Release Notes:**
+          EOF
+          
+          # Indent issue body as blockquote
+          sed 's/^/> /' /tmp/issue-body.md >> /tmp/comment.md
+          
+          cat <<EOF >> /tmp/comment.md
+          
+          ---
+          ### 🛑 Approval Required
+          Check one of the boxes below to proceed:
+          
+          - [ ] **Cancel** (Aborts the release)
+          - [ ] **Continue with release** (Publishes binaries and closes this issue)
+          EOF
+          
+          COMMENT_ID=$(gh api repos/$REPO/issues/$ISSUE_NUM/comments -F body=@/tmp/comment.md --jq '.id')
+          echo "Posted interactive comment ID: $COMMENT_ID"
+          
+          echo "Polling for user input every 15 seconds..."
+          while true; do
+            CURRENT_BODY=$(gh api repos/$REPO/issues/comments/$COMMENT_ID --jq '.body')
+            
+            # Check for both [x] and [X] to be safe
+            if echo "$CURRENT_BODY" | grep -qE "\[[xX]\] \*\*Cancel\*\*"; then
+              echo "User canceled the release."
+              gh issue comment $ISSUE_NUM --body "🛑 Release process was cancelled by the user 😔😔😔😟"
+              exit 1
+            fi
+            
+            if echo "$CURRENT_BODY" | grep -qE "\[[xX]\] \*\*Continue with release\*\*"; then
+              echo "User approved the release!"
+              break
+            fi
+            
+            sleep 15
+          done
+
+  # ─────────────────────────────────────────────────────────────────
+  # 3. PUBLISH GITHUB RELEASE
+  # ─────────────────────────────────────────────────────────────────
+  publish-release:
+    needs: interactive-approval
+    name: Publish Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.interactive-approval.outputs.tag }}
+          NOTES: ${{ github.event.issue.body }}
+        run: |
+          if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Invalid tag format: $TAG"
+            exit 1
+          fi
+          
+          if git ls-remote --tags origin "refs/tags/$TAG" | grep -q "$TAG"; then
+            echo "Tag $TAG already exists!"
+            exit 1
+          fi
+          
+          printf '%s' "$NOTES" > release-notes.md
+          
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          
+          gh release create "$TAG" \
+            sb3-bulk-downloader-windows.exe \
+            sb3-bulk-downloader-linux \
+            sb3-bulk-downloader-macos.app.tar.gz \
+            --title "sb3-bulk-downloader $TAG" \
+            --notes-file release-notes.md
+            
+      - name: Close Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUM: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment $ISSUE_NUM --body $'# ✅ Release Published Successfully! Closing this issue.\n 💡🔨🎓 :shipit: <img width="360" height="338" alt="image" src="https://github.com/user-attachments/assets/0363f8b4-085a-4d24-94d7-38e2f693e0e6" />'
+          gh issue close $ISSUE_NUM --reason completed
