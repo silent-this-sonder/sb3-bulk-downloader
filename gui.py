@@ -24,13 +24,13 @@ ctk.set_appearance_mode("system")
 
 # CUSTOM WIDGETS
 class ScrollableChecklist(ctk.CTkScrollableFrame):
-    '''Create a list of checkbuttons that supports scrolling.
+    """Create a list of checkbuttons that supports scrolling.
     
     Attributes:
         items: The list of text lines corresponding to the checkboxes.
         buttons: The list of ctk.CTkCheckBox objects.
         vars: The list of tk.BooleanVar objects to store the checkbox states
-    '''
+    """
     def __init__(self, master, items, **kwargs):
         """Initializes a ScrollableChecklist.
 
@@ -409,8 +409,8 @@ class AppGUI(ctk.CTk):
         self.after(100, self.queue_loop)
 
     def on_closing(self):
-        '''Here we see a lovely function for manually closing this app window because Python is a hard-headed mule :D
-        '''
+        """Here we see a lovely function for manually closing this app window because Python is a hard-headed mule :D
+        """
         self.destroy()
         sys.exit()
 

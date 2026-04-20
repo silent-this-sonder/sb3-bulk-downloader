@@ -535,13 +535,13 @@ class CLIDownloader(DownloadController):
             print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
     
     def menu(self, arr):
-        '''Displays items in a list for the user to choose from.
+        """Displays items in a list for the user to choose from.
         
         Args:
             arr: The list of options.
         Returns:
             The index of the user's choice from the list.
-        '''
+        """
         for i in range(len(arr)):
             print("\t" + str(i) + ". " + str(arr[i]))
             
