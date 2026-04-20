@@ -494,9 +494,6 @@ class DownloadController:
                     zf.write(file_path, arcname)
                 # hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm as scratch accept isnt the same it can corrupt it
         shutil.rmtree(project_dir)
-        
-
-
         return sb3_path
     
     
