@@ -24,8 +24,20 @@ ctk.set_appearance_mode("system")
 
 # CUSTOM WIDGETS
 class ScrollableChecklist(ctk.CTkScrollableFrame):
-    '''Create a list of checkbuttons that supports scrolling'''
+    '''Create a list of checkbuttons that supports scrolling.
+    
+    Attributes:
+        items: The list of text lines corresponding to the checkboxes.
+        buttons: The list of ctk.CTkCheckBox objects.
+        vars: The list of tk.BooleanVar objects to store the checkbox states
+    '''
     def __init__(self, master, items, **kwargs):
+        """Initializes a ScrollableChecklist.
+
+        Args:
+            master: The frame or ctk.Ctk object that it is part of.
+            items: The text lines for each checkbox.
+        """
         super().__init__(master, **kwargs)
         self.items = items
         self.buttons = []
@@ -34,6 +46,11 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
         self.make_checkbuttons(items)
 
     def make_checkbuttons(self, items):
+        """Populates the checklist with the checkboxes and text.
+
+        Args:
+            items: The text lines for each checkbox.
+        """
         # get rid of old buttons
         for button in self.buttons:
             button.destroy()
