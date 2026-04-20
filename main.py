@@ -1,14 +1,15 @@
+from getpass import getpass
 import json
 import os
 import shutil
 import string
 import time as t
 import traceback
-import zipfile
 import warnings
+import zipfile
+
 import requests
 import scratchattach as s3
-from getpass import getpass
 
 class DownloadController:
     """In charge of the downloading logic.

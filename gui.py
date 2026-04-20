@@ -1,11 +1,10 @@
+from pathlib import Path
 import sys
 import time
 from threading import Thread
 import tkinter as tk
 from tkinter import filedialog
 from queue import Queue, Empty
-from pathlib import Path
- 
 
 import customtkinter as ctk
 from PIL import Image
