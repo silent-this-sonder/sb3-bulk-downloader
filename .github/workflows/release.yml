@@ -44,7 +44,7 @@ jobs:
           - os: windows-latest
             os_name: windows
             exe_ext: ".exe"
-            nuitka_mode: "--onefile --onefile-cache-mode=cache"
+            nuitka_mode: "--onefile --onefile-cache-mode=cached"
             run_cmd: "./sb3-bulk-downloader-windows.exe"
             artifact_path: "sb3-bulk-downloader-windows.exe"
             icon_arg: "--windows-icon-from-ico=assets/icon.ico"
