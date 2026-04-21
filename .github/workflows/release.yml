@@ -44,7 +44,7 @@ jobs:
           - os: windows-latest
             os_name: windows
             exe_ext: ".exe"
-            nuitka_mode: "--onefile-cache-mode=cache"
+            nuitka_mode: "--onefile --onefile-cache-mode=cache"
             run_cmd: "./sb3-bulk-downloader-windows.exe"
             artifact_path: "sb3-bulk-downloader-windows.exe"
             icon_arg: "--windows-icon-from-ico=assets/icon.ico"
@@ -78,10 +78,22 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache
-
+          
       - name: Compile with Nuitka
         run: |
-          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} --macos-app-name=sb3-bulk-downloader-macos gui.py
+          python -m nuitka --assume-yes-for-downloads --jobs=4 \
+            ${{ matrix.nuitka_mode }} \
+            ${{ matrix.icon_arg }} \
+            --enable-plugin=tk-inter \
+            --include-data-dir=assets=assets \
+            --include-package-data=certifi \
+            --company-name="silent-this-sonder" \
+            --product-name="sb3-bulk-downloader" \
+            --file-version="1.0.0.0" \
+            --product-version="1.0.0.0" \
+            --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} \
+            --macos-app-name=sb3-bulk-downloader-macos \
+            gui.py
           
       - name: Create Screenshot Runner Script
         shell: bash
