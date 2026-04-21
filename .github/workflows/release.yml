@@ -151,7 +151,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          xvfb-run --auto-servernum bash -c "openbox & tint2 & feh --bg-fill https://raw.githubusercontent.com/silent-this-sonder/sb3-bulk-downloader/main/.github/wallpaper.png & sleep 2 && python runner.py '${{ matrix.run_cmd }}'"
+          xvfb-run --auto-servernum bash -c "startxfce4 & sleep 5 && python runner.py '${{ matrix.run_cmd }}'"
 
       - name: Run App & Capture Screen (Windows/Mac)
         if: runner.os != 'Linux'
