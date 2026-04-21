@@ -66,7 +66,21 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
             cb.pack(pady=2, anchor="w")
 
 class CTkMessagebox(ctk.CTkToplevel):
+    """A pop-up window meant to act like ttk.Messagebox.
+
+    Attributes:
+        title: The messagebox name.
+        label: The actual message text.
+        button: The OK button to close the pop-up.
+    """
     def __init__(self, master : ctk.CTk, title, desc, *args, **kwargs):
+        """Initializes a CTkMessagebox object that grabs focus from the main window.
+        
+        Args:
+            master: The root ctk.CTk object.
+            title: The messagebox name.
+            desc: The messaage to display.
+        """
         super().__init__(master, *args, **kwargs)
         self.master = master
 
