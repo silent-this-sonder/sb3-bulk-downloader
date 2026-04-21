@@ -349,6 +349,7 @@ jobs:
           IS_NUM: ${{github.event.issue.number}}
           REPO: ${{github.repository}}
         run: |
+          BASE_URL="https://raw.githubusercontent.com/$REPO/screenshots/issue-$ISSUE_NUM"
           if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
             echo "Invalid tag format: $TAG"
             exit 1
@@ -372,7 +373,7 @@ jobs:
           
           | OS | Screenshot |
           |----|------------|
-          | <img width="12" height="12" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu(xvfb) | <img src="$BASE_URL/ubuntu-latest.png" width="600" /> |
+          | <img width="12" height="12" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu | <img src="$BASE_URL/ubuntu-latest.png" width="600" /> |
           | <img width="12" height="12" src="https://github.com/user-attachments/assets/4da4c060-732a-4aaf-b080-6b8de0600c71" /> Windows | <img src="$BASE_URL/windows-latest.png" width="600" /> |
           | <img width="12" height="12" src="https://github.com/user-attachments/assets/636ee068-b7a7-489d-a545-a616534900ed" /> macOS | <img src="$BASE_URL/macos-latest.png" width="600" /> |
           EOF
