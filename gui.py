@@ -118,8 +118,18 @@ class LoginScreen(ctk.CTkFrame):
         self.pw_toggle_button.place(in_=self.pw_entry, relx=1.0, rely=0.5, x=5, anchor="w")
         self.login_button.pack(padx=20, pady=(10, 20))
 
+        try: 
+            self.iconbitmap(str(ASSETS_DIR / "icon.ico"))
+            # this try block is just so that it doesn't error on local runs with the source code or other OS's
+            # in reality, this should only affect the compiled version of windows by adding the icon to the taskbar
+            
+        except:
+            pass
+
+
         self.user_entry.bind("<Return>", lambda event: self.validate_login()) # Allows pressing enter to login instead of pressing button
         self.pw_entry.bind("<Return>", lambda event: self.validate_login())
+        
 
 
     def toggle_password_visibility(self):
