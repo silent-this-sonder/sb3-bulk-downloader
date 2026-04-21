@@ -80,6 +80,7 @@ jobs:
           sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache
           
       - name: Compile with Nuitka
+        shell: bash   # ← add this line
         run: |
           python -m nuitka --assume-yes-for-downloads --jobs=4 \
             ${{ matrix.nuitka_mode }} \
