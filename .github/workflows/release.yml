@@ -102,6 +102,8 @@ jobs:
             --include-data-dir=assets=assets \
             --include-package-data=certifi \
             --include-package-data=flet \
+            --include-package=flet \
+            --include-module=flet_desktop \
             --company-name="silent-this-sonder" \
             --product-name="sb3-bulk-downloader" \
             --file-version="1.0.0.0" \
