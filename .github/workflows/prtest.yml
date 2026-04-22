@@ -72,7 +72,7 @@ jobs:
         env:
           NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
         run: |
-          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package-data=flet --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
+          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package=flet --include-package-data=flet --include-module=flet_desktop --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
 
       - name: Create Screenshot Runner Script
         shell: bash
