@@ -14,6 +14,7 @@ def main(page: ft.Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
+
     logo_image = ft.Image(
         src=str(ASSETS_DIR / "logo.png"),
         width=200,
@@ -25,7 +26,11 @@ def main(page: ft.Page):
         page.window.icon = str(ASSETS_DIR / "icon.ico")
     except:
         pass
-    page.add(logo_image)
+
+    sb_text = ft.Text("SB3 Bulk Downloader", size=32, weight=ft.FontWeight.W_600)
+    page.add(sb_text, logo_image)
+
+
     page.update()
 
 if __name__ == "__main__":
