@@ -10,6 +10,9 @@ def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
     page.window.height = 720
+     
+    page.horizontal_alignment = "center"
+    page.vertical_alignment = "center"
 
     logo_image = ft.Image(
         src=str(ASSETS_DIR / "logo.png"),
