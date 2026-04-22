@@ -1,6 +1,7 @@
 import flet as ft
 import sys
 from pathlib import Path
+import main
 
 
 ASSETS_DIR = Path("assets")
@@ -32,7 +33,14 @@ def main(page: ft.Page):
 
     username_field = ft.TextField(label="Username", hint_text="Enter a Scratch username")
     password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True)
-    page.add(sb_text, logo_image, disclaimer, username_field, password_field)
+    login = ft.ElevatedButton(
+        content="Sign in",
+        on_click=lambda _: print("Login clicked"),
+        color="white",
+        
+        bgcolor="#855cd6"
+    )
+    page.add(sb_text, logo_image, disclaimer, username_field, password_field, login)
 
 
     page.update()
