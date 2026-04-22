@@ -56,7 +56,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install zstandard "nuitka[onefile]" pyautogui pillow requests scratchattach customtkinter imageio
+          pip install zstandard "nuitka[onefile]" pyautogui pillow requests scratchattach flet imageio
 
       - name: Generate OS-specific App Icons
         run: |
@@ -72,7 +72,7 @@ jobs:
         env:
           NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
         run: |
-          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --enable-plugin=tk-inter --include-data-dir=assets=assets --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
+          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package-data=flet --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
 
       - name: Create Screenshot Runner Script
         shell: bash

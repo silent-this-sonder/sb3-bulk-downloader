@@ -1,10 +1,11 @@
 import flet as ft
 import sys
 from pathlib import Path
-import main
+import main as app_main
 
 
-ASSETS_DIR = Path("assets")
+BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+ASSETS_DIR = BASE_DIR / "assets"
 
 
 def main(page: ft.Page):
@@ -35,7 +36,7 @@ def main(page: ft.Page):
     password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True)
     login = ft.ElevatedButton(
         content="Sign in",
-        on_click=lambda _: main.validate_login(username_field.value, password_field.value, page),
+        on_click=lambda _: app_main.validate_login(username_field.value, password_field.value),
         color="white",
         
         bgcolor="#855cd6"
