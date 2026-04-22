@@ -35,7 +35,7 @@ def main(page: ft.Page):
     password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True)
     login = ft.ElevatedButton(
         content="Sign in",
-        on_click=lambda _: print("Login clicked"),
+        on_click=lambda _: main.validate_login(username_field.value, password_field.value, page),
         color="white",
         
         bgcolor="#855cd6"
