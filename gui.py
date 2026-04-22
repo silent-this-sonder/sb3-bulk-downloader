@@ -27,8 +27,12 @@ def main(page: ft.Page):
     except:
         pass
 
-    sb_text = ft.Text("SB3 Bulk Downloader", size=32, weight=ft.FontWeight.W_600)
-    page.add(sb_text, logo_image)
+    sb_text = ft.Text("SB3 Bulk Downloader", size=32, weight="w600")
+    disclaimer  = ft.Text("Credentials are only sent to Scratch's servers, and we don't store them.", size=12, color="grey600")
+
+    username_field = ft.TextField(label="Username", hint_text="Enter a Scratch username")
+    password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True)
+    page.add(sb_text, logo_image, disclaimer, username_field, password_field)
 
 
     page.update()
