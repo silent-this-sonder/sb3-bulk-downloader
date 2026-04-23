@@ -52,6 +52,14 @@ jobs:
           key: ${{ runner.os }}-nuitka-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-nuitka-
+            
+      - name: Cache ccache
+        if: runner.os == 'Linux'
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: ccache-${{ runner.os }}-
 
       - name: Install Dependencies
         run: |
@@ -66,11 +74,13 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache
+          sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache \
+            libgl1 libegl1 libgbm1
 
       - name: Compile with Nuitka
         env:
           NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
+          CC: ccache gcc
         run: |
           python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package=flet --include-package-data=flet --include-module=flet_desktop --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
 
@@ -115,6 +125,8 @@ jobs:
       - name: Run App & Capture Screen (Linux)
         if: runner.os == 'Linux'
         shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
         run: xvfb-run --auto-servernum python runner.py "${{ matrix.run_cmd }}"
 
       - name: Run App & Capture Screen (Windows/Mac)
