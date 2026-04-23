@@ -34,7 +34,7 @@ def main(page: ft.Page):
 
     username_field = ft.TextField(label="Username", hint_text="Enter a Scratch username")
     password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True)
-    login = ft.ElevatedButton(
+    login = ft.Button(
         content="Sign in",
         on_click=lambda _: app_main.validate_login(username_field.value, password_field.value),
         color="white",
