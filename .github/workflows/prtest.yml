@@ -75,14 +75,28 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb scrot python3-tk python3-dev gnome-screenshot patchelf ccache \
-            libgl1 libegl1 libgbm1
+            libgl1 libegl1 libgbm1 libsecret-1-dev
 
       - name: Compile with Nuitka
+        shell: bash
         env:
           NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
           
         run: |
-          python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package=flet --include-package-data=flet --include-module=flet_desktop --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py
+          cat << 'EOF' > compiler.py
+          import sys
+          import subprocess
+          if sys.platform == "linux":
+            subprocess.run("python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package=flet --include-shlib=/usr/lib/x86_64-linux-gnu/libsecret-1.so.0=. --include-package-data=flet --include-module=flet_desktop  --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py", shell=True).
+          else:
+            subprocess.run("python -m nuitka --assume-yes-for-downloads --jobs=4 ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} --include-data-dir=assets=assets --include-package=flet  --include-package-data=flet --include-module=flet_desktop  --output-filename=sb3-bulk-downloader-${{ matrix.os_name }}${{ matrix.exe_ext }} gui.py", shell=True).
+            
+          
+
+          
+          
+
+          
 
       - name: Create Screenshot Runner Script
         shell: bash
