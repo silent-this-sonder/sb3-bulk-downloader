@@ -84,7 +84,7 @@ jobs:
         run: |
           EXTRA_FLAGS=""
           if [ "$RUNNER_OS" = "Linux" ]; then
-            EXTRA_FLAGS="--include-shlib=/usr/lib/x86_64-linux-gnu/libsecret-1.so.0=."
+            EXTRA_FLAGS="--include-data-file=/usr/lib/x86_64-linux-gnu/libsecret-1.so.0=libsecret-1.so.0"
           fi
           python -m nuitka --assume-yes-for-downloads --jobs=4 \
             ${{ matrix.nuitka_mode }} ${{ matrix.icon_arg }} \
