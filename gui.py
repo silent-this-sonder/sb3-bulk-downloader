@@ -16,6 +16,7 @@ def main(page: ft.Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
+    dw = app_main.DownloadController()
 
     logo_image = ft.Image(
         src=str(ASSETS_DIR / "logo.png"),
@@ -36,7 +37,7 @@ def main(page: ft.Page):
     password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True)
     login = ft.Button(
         content="Sign in",
-        on_click=lambda _: app_main.validate_login(username_field.value, password_field.value),
+        on_click=lambda _: dw.validate_login(username_field.value, password_field.value),
         color="white",
         
         bgcolor="#855cd6"
