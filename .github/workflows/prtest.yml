@@ -91,7 +91,7 @@ jobs:
             libgles2 libegl1 libgl1 libgbm1 \
             libsecret-1-dev libjsoncpp-dev \
             libx11-6 libxext-dev libxrender-dev libxrandr-dev \
-            xfce4 xfce4-terminal gnome-screenshot
+            xfce4 xfce4-terminal gnome-screenshot dbus-x11 at-spi2-core
 
       - name: Compile with Nuitka
         shell: bash
@@ -164,7 +164,7 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
           NO_AT_BRIDGE: "1"
         run: |
-          xvfb-run --auto-servernum bash -c "startxfce4 & sleep 5 && python runner.py '${{ matrix.run_cmd }}'"
+          xvfb-run --auto-servernum bash -c "export NO_AT_BRIDGE=1; dbus-launch startxfce4 & sleep 10 && python runner.py '${{ matrix.run_cmd }}'"
 
       - name: Run App & Capture Screen (Windows/Mac)
         if: runner.os != 'Linux'
