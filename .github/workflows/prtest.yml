@@ -165,7 +165,7 @@ jobs:
           NO_AT_BRIDGE: "1"
           GTK_A11Y: "none"
         run: |
-          xvfb-run --auto-servernum dbus-run-session bash -c "xfwm4 & xfce4-panel & sleep 5 && python runner.py '${{ matrix.run_cmd }}'"
+          xvfb-run --auto-servernum dbus-run-session bash -c "xfwm4 & xfce4-panel & xfdesktop & sleep 5 && python runner.py '${{ matrix.run_cmd }}'"
 
       - name: Run App & Capture Screen (Windows/Mac)
         if: runner.os != 'Linux'
