@@ -33,18 +33,9 @@ def main(page: ft.Page):
 
     sb_text = ft.Text("SB3 Bulk Downloader", size=32, weight="w600")
     disclaimer  = ft.Text("Credentials are only sent to Scratch's servers, and we don't store them.", size=12, color="grey600")
-    login = ft.Button(
-        content="Sign in",
-        on_click=handle_login,
-        color="white",
-        
-        bgcolor="#855cd6"
-    )
-    username_field = ft.TextField(label="Username", hint_text="Enter a Scratch username", on_submit=handle_login)
-    password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True, on_submit=handle_login)
+    
     fail_counter = 0
     empty_counter = 0
-
 
     def handle_login(e):
         nonlocal fail_counter
@@ -140,9 +131,17 @@ def main(page: ft.Page):
                 )
             page.show_dialog(dlg)
         else:
-            pass # TODO: Proceed to next screen
+            ProjectSelectScreen()
 
+    login = ft.Button(
+        content="Sign in",
+        on_click=handle_login,
+        color="white",
+        bgcolor="#855cd6"
+    )
 
+    username_field = ft.TextField(label="Username", hint_text="Enter a Scratch username", on_submit=handle_login)
+    password_field = ft.TextField(label="Password", hint_text="Enter your password", password=True, can_reveal_password=True, on_submit=handle_login)
     def login_screen(): # TODO: should we refactor this into a class later like the original?
         page.clean()
         page.add(sb_text, logo_image, disclaimer, username_field, password_field, login)
@@ -156,6 +155,7 @@ def main(page: ft.Page):
     def ProjectSelectScreen():
         page.clean()
         page.add(placeholder)
+        page.update()
         
 
 
