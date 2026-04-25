@@ -97,12 +97,19 @@ def main(page: ft.Page):
 
         page.update()
     login_screen()
-
-    placeholder = ft.Text("placeholder for project select screen", size=67, color="red")
+ 
 
     def ProjectSelectScreen():
         page.clean()
-        page.add(placeholder)
+        page.add(
+        ft.Text("To-Do List", size=30),
+        # i stole this example so i could know how to make a checklist
+        ft.Column([
+            ft.Checkbox(label="Buy groceries", value=False),
+            ft.Checkbox(label="Walk the dog", value=True),
+            ft.Checkbox(label="Finish Flet project", value=False),
+        ])
+    )
         page.update()
         
 
