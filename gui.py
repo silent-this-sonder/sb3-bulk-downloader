@@ -2,6 +2,7 @@ import flet as ft
 import sys
 from pathlib import Path
 import main as app_main
+import threading
 
 
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
