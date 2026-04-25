@@ -40,73 +40,22 @@ def main(page: ft.Page):
     def handle_login(e):
         nonlocal fail_counter
         nonlocal empty_counter
+
         # just for the funsies
-        
+        with open("assets/login_messages.txt", "r", encoding="utf-8") as f:
+            login_messages = f.readlines()
+
         # check if someone made it empty so it doesn't keep sending fail requests to scratch and get flagged or smth
-
-        if not username_field.value or not password_field.value:
+        if empty_counter < len(login_messages) and (not username_field.value or not password_field.value):
+            dlg = ft.AlertDialog(
+                title="Login Failed",
+                content=ft.Text(login_messages[empty_counter]),
+                actions=[ft.TextButton("OK", on_click=lambda e: page.pop_dialog())],
+                on_dismiss=lambda e: None
+            )
+            page.show_dialog(dlg)
             empty_counter += 1
-            if empty_counter >= 3 and empty_counter < 6:
-                dlg = ft.AlertDialog(
-                    title="Login Failed",
-                    content=ft.Text("WHY DO YOU KEEP LEAVING THE FIELDS EMPTY?!?!!? "), # TODO: @silent-this-sonder you might wanna make this funnier or softer idk
-                    actions=[ft.TextButton("OK", on_click=lambda e: page.pop_dialog())],
-                    on_dismiss=lambda e: None
-
-                )
-                page.show_dialog(dlg)
-            elif empty_counter >= 6 and empty_counter < 9:
-                dlg = ft.AlertDialog(
-                    title="Login Failed",
-                    content=ft.Text("WHAT ARE YOU DOING? DID YOU FALL ASLEEP ON THE LOGIN BUTTON?!? STOP!!!11!"),
-                    on_dismiss=lambda e: None
-
-                )
-                page.show_dialog(dlg)
-
-            elif empty_counter >= 9 and empty_counter < 20:
-                dlg = ft.AlertDialog(
-                    title="Login Failed",
-                    content=ft.Text("ARE YOU OK? DO YOU NEED HELP? ARE YOU JUST SPAMMING THE LOGIN BUTTON FOR FUN? This is definitely getting me to Scratch my head."),
-                    on_dismiss=lambda e: None
-
-                )
-                page.show_dialog(dlg)
-            elif empty_counter >= 20 and empty_counter <= 30:
-                    dlg = ft.AlertDialog(
-                        title="Login Failed",
-                        content=ft.Text("You need help."),
-                        on_dismiss=lambda e: None
-    
-                    )
-                    page.show_dialog(dlg)
-            elif empty_counter > 30 and empty_counter <= 100:
-                dlg = ft.AlertDialog(
-                    title="Login Failed",
-                    content=ft.Text("STOP IT."),
-                    on_dismiss=lambda e: None
-    
-                )
-                page.show_dialog(dlg)
-            elif empty_counter > 100:
-                dlg = ft.AlertDialog(
-                    title="Login Failed",
-                    content=ft.Text("Think about all the time you just spent spamming this button for absolutely no reason expecting it to get increasingly angrier. That's it. You've done it. There are no more increasingly angrier messages. This is the last one. Think about all the time you just wasted. You could've been playing games, doing work, something productive. No, instead you chose to waste your precious, limited time in clicking a login button. You can't time travel backwards. You can't regain the time you lost doing this. You only kept being persistent for that quick and easy dopamine hit of getting an increasingly funnier message. Is that how your whole life works? You waste time because it's funny? Because it's entertaining? Because maybe you should rethink what you could've been doing this whole time................................ Anyways, how are you liking this tool? Don't forget to star the repo and give us a nice message in the forum topic!"),
-                    on_dismiss= lambda e: sys.exit(67)
-                    
-                )
-                page.show_dialog(dlg)
-            else: 
-                dlg = ft.AlertDialog(
-                    title="Login Failed",
-                    content=ft.Text("Please type something in both fields."),
-                    actions=[ft.TextButton("OK", on_click=lambda e: page.pop_dialog())],
-                    on_dismiss=lambda e: None
-
-                )
-                page.show_dialog(dlg)
             return
-                
 
         success = dw.validate_login(username_field.value, password_field.value)
         if not success:
