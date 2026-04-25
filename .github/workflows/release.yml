@@ -77,11 +77,34 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          
+      - name: Disable Windows Defender real-time monitoring
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Set-MpPreference -DisableRealtimeMonitoring $true
+          Add-MpPreference -ExclusionPath "${{ github.workspace }}"
+
+      - name: Cache Nuitka
+        uses: actions/cache@v4
+        with:
+          path: .nuitka-cache
+          key: ${{ runner.os }}-nuitka-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nuitka-
+            
+      - name: Cache ccache
+        if: runner.os == 'Linux'
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: ccache-${{ runner.os }}-
 
       - name: Install Build & OS Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install zstandard "nuitka[onefile]" flet[all] requests scratchattach Pillow pyautogui imageio
+          pip install zstandard "nuitka[onefile]" flet[all] requests scratchattach pillow pyautogui imageio
 
       - name: Generate OS-specific App Icons
         run: |
@@ -91,19 +114,31 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb scrot python3-tk python3-dev patchelf ccache xfce4 xfce4-terminal
+          sudo apt-get install -y \
+            xvfb scrot patchelf ccache \
+            libgtk-3-dev libglib2.0-dev \
+            libgles2 libegl1 libgl1 libgbm1 \
+            libsecret-1-dev libjsoncpp-dev \
+            libx11-6 libxext-dev libxrender-dev libxrandr-dev
           
       - name: Compile with Nuitka
-        shell: bash   # ← add this line
+        shell: bash
+        env:
+          NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
         run: |
+          EXTRA_FLAGS=""
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            EXTRA_FLAGS="--include-data-file=/usr/lib/x86_64-linux-gnu/libsecret-1.so.0=libsecret-1.so.0"
+          fi
           python -m nuitka --assume-yes-for-downloads --jobs=4 \
             ${{ matrix.nuitka_mode }} \
             ${{ matrix.icon_arg }} \
             --include-data-dir=assets=assets \
             --include-package-data=certifi \
             --include-package-data=flet \
-            --include-package=flet \
+            --include-package-data=flet_desktop \
             --include-module=flet_desktop \
+            $EXTRA_FLAGS \
             --company-name="silent-this-sonder" \
             --product-name="sb3-bulk-downloader" \
             --file-version="1.0.0.0" \
@@ -117,6 +152,7 @@ jobs:
         run: |
           cat << 'EOF' > runner.py
           import subprocess, time, pyautogui, sys, os
+          import shlex
           import glob
           import plistlib
           
@@ -148,12 +184,14 @@ jobs:
               
           p.terminate()
           EOF
-
+          
       - name: Run App & Capture Screen (Linux)
         if: runner.os == 'Linux'
         shell: bash
-        run: |
-          xvfb-run --auto-servernum bash -c "startxfce4 & sleep 5 && python runner.py '${{ matrix.run_cmd }}'"
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          NO_AT_BRIDGE: "1"
+        run: xvfb-run --auto-servernum python runner.py "${{ matrix.run_cmd }}"
 
       - name: Run App & Capture Screen (Windows/Mac)
         if: runner.os != 'Linux'
