@@ -120,7 +120,7 @@ def main(page: ft.Page):
         success = dw.validate_login(username_field.value, password_field.value)
         if not success:
             fail_counter += 1
-            if fail_counter >= 3:
+            if fail_counter >= 4:
                 dlg = ft.AlertDialog(
                     title="Login Failed",
                     content=ft.Text("Are you guessing passwords or something? Please type valid Scratch Account credentials. If you keep messing up, your IP might get banned by Scratch."),
