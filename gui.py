@@ -31,7 +31,7 @@ def main(page: ft.Page):
     except:
         pass
 
-    sb_text = ft.Text("SB3 Bulk Downloader", size=32, weight="w600")
+    sb_text = ft.Text("Scratch Project Bulk Downloader", size=32, weight="w600")
     disclaimer  = ft.Text("Credentials are only sent to Scratch's servers, and we don't store them.", size=12, color="grey600")
     
     fail_counter = 0
