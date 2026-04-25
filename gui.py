@@ -36,14 +36,13 @@ def main(page: ft.Page):
     
     fail_counter = 0
     empty_counter = 0
+    # just for the funsies
+    with open("assets/login_messages.txt", "r", encoding="utf-8") as f:
+        login_messages = f.readlines()
 
     def handle_login(e):
         nonlocal fail_counter
         nonlocal empty_counter
-
-        # just for the funsies
-        with open("assets/login_messages.txt", "r", encoding="utf-8") as f:
-            login_messages = f.readlines()
 
         # check if someone made it empty so it doesn't keep sending fail requests to scratch and get flagged or smth
         if empty_counter < len(login_messages) and (not username_field.value or not password_field.value):
