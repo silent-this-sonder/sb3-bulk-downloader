@@ -115,6 +115,9 @@ def main(page: ft.Page):
             options=[ft.dropdown.Option(key=opt, text=opt.capitalize()) for opt in project_opts],
 
 
+        
+
+         hint_text="Sort by", bgcolor="#855cd6",color="white" , fill_color="#855cd6", filled=True, hint_style=hintstyle, on_text_change=lambda e: None) # TODO: format atrocious indenting
         def handle_filter_change(e):
             project_label.value = "loading Projects..."
             project_optmenu.disabled = True
@@ -126,10 +129,8 @@ def main(page: ft.Page):
                 for project in projects:
                     cb = ft.Checkbox(label=project.title, value=False)
                     project_checklist.controls.append(cb)
-                       
-
-         hint_text="Sort by", bgcolor="#855cd6",color="white" , fill_color="#855cd6", filled=True, hint_style=hintstyle, on_text_change=lambda e: None) # TODO: format atrocious indenting
-        
+            except:
+                print("boooooooom ")
         project_checklist = ft.Column(height=300)
         
         
