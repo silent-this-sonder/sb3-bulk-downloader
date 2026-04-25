@@ -109,9 +109,11 @@ def main(page: ft.Page):
         page.clean()
         project_opts = ["all", "shared", "unshared"]
         project_label = ft.Text("Projects to Download", size=32, weight="w600")
+        # for some reason flet doesn't let me set the same color for the hint text than the actual thing so i have to do it separately
+        hintstyle= ft.TextStyle(color="white")
         project_optmenu = ft.Dropdown(
             options=[ft.dropdown.Option(key=opt, text=opt.capitalize()) for opt in project_opts],
-         hint_text="Sort by", bgcolor="#855cd6", color="white", fill_color="#855cd6", filled=True) # TODO: format atrocious indenting
+         hint_text="Sort by", bgcolor="#855cd6",color="white" , fill_color="#855cd6", filled=True, hint_style=hintstyle) # TODO: format atrocious indenting
         
         
         page.add(
