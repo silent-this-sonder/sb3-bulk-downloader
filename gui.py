@@ -5,6 +5,11 @@ import main as app_main
 import threading
 
 
+def get_default_download_dir() -> Path:
+    downloads = Path.home() / "Downloads"
+    base_dir = downloads if downloads.exists() else Path.home()
+    return base_dir / "Scratch-Projects"
+
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
