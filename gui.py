@@ -1,11 +1,10 @@
+from pathlib import Path
 import sys
 import time
 from threading import Thread
 import tkinter as tk
 from tkinter import filedialog
 from queue import Queue, Empty
-from pathlib import Path
- 
 
 import customtkinter as ctk
 from PIL import Image
@@ -25,8 +24,20 @@ ctk.set_appearance_mode("system")
 
 # CUSTOM WIDGETS
 class ScrollableChecklist(ctk.CTkScrollableFrame):
-    '''Create a list of checkbuttons that supports scrolling'''
+    """Create a list of checkbuttons that supports scrolling.
+    
+    Attributes:
+        items: The list of text lines corresponding to the checkboxes.
+        buttons: The list of ctk.CTkCheckBox objects.
+        vars: The list of tk.BooleanVar objects to store the checkbox states
+    """
     def __init__(self, master, items, **kwargs):
+        """Initializes a ScrollableChecklist.
+
+        Args:
+            master: The frame or ctk.Ctk object that it is part of.
+            items: The text lines for each checkbox.
+        """
         super().__init__(master, **kwargs)
         self.items = items
         self.buttons = []
@@ -35,6 +46,11 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
         self.make_checkbuttons(items)
 
     def make_checkbuttons(self, items):
+        """Populates the checklist with the checkboxes and text.
+
+        Args:
+            items: The text lines for each checkbox.
+        """
         # get rid of old buttons
         for button in self.buttons:
             button.destroy()
@@ -50,7 +66,21 @@ class ScrollableChecklist(ctk.CTkScrollableFrame):
             cb.pack(pady=2, anchor="w")
 
 class CTkMessagebox(ctk.CTkToplevel):
+    """A pop-up window meant to act like ttk.Messagebox.
+
+    Attributes:
+        title: The messagebox name.
+        label: The actual message text.
+        button: The OK button to close the pop-up.
+    """
     def __init__(self, master : ctk.CTk, title, desc, *args, **kwargs):
+        """Initializes a CTkMessagebox object that grabs focus from the main window.
+        
+        Args:
+            master: The root ctk.CTk object.
+            title: The messagebox name.
+            desc: The messaage to display.
+        """
         super().__init__(master, *args, **kwargs)
         self.master = master
 
@@ -404,8 +434,8 @@ class AppGUI(ctk.CTk):
         self.after(100, self.queue_loop)
 
     def on_closing(self):
-        '''Here we see a lovely function for manually closing this app window because Python is a hard-headed mule :D
-        '''
+        """Here we see a lovely function for manually closing this app window because Python is a hard-headed mule :D
+        """
         self.destroy()
         sys.exit()
 
