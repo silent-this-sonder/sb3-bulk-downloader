@@ -100,15 +100,23 @@ def main(page: ft.Page):
         page.add(sb_text, logo_image, disclaimer, username_field, password_field, login)
 
 
+
         page.update()
     login_screen()
  
 
     def ProjectSelectScreen():
         page.clean()
+        project_opts = ["all", "shared", "unshared"]
+        project_label = ft.Text("Projects to Download", size=32, weight="w600")
+        project_optmenu = ft.Dropdown(
+            options=[ft.dropdown.Option(key=opt, text=opt.capitalize()) for opt in project_opts],
+         hint_text="Sort by", bgcolor="#855cd6", color="white", fill_color="#855cd6", filled=True) # TODO: format atrocious indenting
+        
+        
         page.add(
-        ft.Text("To-Do List", size=30),
-        # i stole this example so i could know how to make a checklist
+        project_label,
+        project_optmenu,
         ft.Column([
             ft.Checkbox(label="Buy groceries", value=False),
             ft.Checkbox(label="Walk the dog", value=True),
