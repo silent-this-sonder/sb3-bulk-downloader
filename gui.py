@@ -37,7 +37,7 @@ def main(page: ft.Page):
     fail_counter = 0
     empty_counter = 0
     # just for the funsies
-    with open("assets/login_messages.txt", "r", encoding="utf-8") as f:
+    with open(ASSETS_DIR / "login_messages.txt", "r", encoding="utf-8") as f:
         login_messages = f.readlines()
 
     def handle_login(e):
