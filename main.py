@@ -1,14 +1,15 @@
+from getpass import getpass
 import json
 import os
 import shutil
 import string
 import time as t
 import traceback
-import zipfile
 import warnings
+import zipfile
+
 import requests
 import scratchattach as s3
-from getpass import getpass
 
 class DownloadController:
     """In charge of the downloading logic.
@@ -494,9 +495,6 @@ class DownloadController:
                     zf.write(file_path, arcname)
                 # hopefully this doesn't corrupt the sb3 since sometimes, if the zipping algorithm as scratch accept isnt the same it can corrupt it
         shutil.rmtree(project_dir)
-        
-
-
         return sb3_path
     
     
@@ -537,13 +535,13 @@ class CLIDownloader(DownloadController):
             print("Login failed. Try again. Try not to mess up many times or Scratch might flag you as a clanker.")
     
     def menu(self, arr):
-        '''Displays items in a list for the user to choose from.
+        """Displays items in a list for the user to choose from.
         
         Args:
             arr: The list of options.
         Returns:
             The index of the user's choice from the list.
-        '''
+        """
         for i in range(len(arr)):
             print("\t" + str(i) + ". " + str(arr[i]))
             

@@ -5,6 +5,11 @@ import main as app_main
 import threading
 
 
+def get_default_download_dir() -> Path:
+    downloads = Path.home() / "Downloads"
+    base_dir = downloads if downloads.exists() else Path.home()
+    return base_dir / "Scratch-Projects"
+
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
@@ -31,7 +36,7 @@ def main(page: ft.Page):
     except:
         pass
 
-    sb_text = ft.Text("SB3 Bulk Downloader", size=32, weight="w600")
+    sb_text = ft.Text("Scratch Project Bulk Downloader", size=32, weight="w600")
     disclaimer  = ft.Text("Credentials are only sent to Scratch's servers, and we don't store them.", size=12, color="grey600")
     
     fail_counter = 0
@@ -95,14 +100,49 @@ def main(page: ft.Page):
         page.add(sb_text, logo_image, disclaimer, username_field, password_field, login)
 
 
+
         page.update()
     login_screen()
-
-    placeholder = ft.Text("placeholder for project select screen", size=67, color="red")
+ 
 
     def ProjectSelectScreen():
         page.clean()
-        page.add(placeholder)
+        project_opts = ["all", "shared", "unshared"]
+        project_label = ft.Text("Projects to Download", size=32, weight="w600")
+        # for some reason flet doesn't let me set the same color for the hint text than the actual thing so i have to do it separately
+        hintstyle= ft.TextStyle(color="white")
+        project_optmenu = ft.Dropdown(
+            options=[ft.dropdown.Option(key=opt, text=opt.capitalize()) for opt in project_opts],
+
+
+        
+
+         hint_text="Sort by", bgcolor="#855cd6",color="white" , fill_color="#855cd6", filled=True, hint_style=hintstyle, on_text_change=lambda e: None) # TODO: format atrocious indenting
+        def handle_filter_change(e):
+            project_label.value = "loading Projects..."
+            project_optmenu.disabled = True
+            page.update()
+            try:
+                filter_arg = e.control.value
+                projects = dw.get_projects(filter_arg)
+                project_checklist.controls.clear()
+                for project in projects:
+                    cb = ft.Checkbox(label=project.title, value=False)
+                    project_checklist.controls.append(cb)
+            except:
+                print("boooooooom ")
+        project_checklist = ft.Column(height=300)
+        
+        
+        page.add(
+        project_label,
+        project_optmenu,
+        ft.Column([
+            ft.Checkbox(label="Buy groceries", value=False),
+            ft.Checkbox(label="Walk the dog", value=True),
+            ft.Checkbox(label="Finish Flet project", value=False),
+        ])
+    )
         page.update()
         
 
