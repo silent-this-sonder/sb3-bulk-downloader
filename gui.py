@@ -82,10 +82,16 @@ def main(page: ft.Page):
     
     def route_change(e=None):
         page.views.clear()
-        # page.views.append(ft.View(route="/"))
         match page.route:
+            case "/":
+                # TODO: turn into the home screen later
+                page.views.append(ft.View(route="/"))
             case "/login":
                 page.views.append(LoginScreen())
+            case "/project-select":
+                pass
+            case "/downloads":
+                pass
         page.update()
 
     async def view_pop(e):
