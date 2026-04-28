@@ -1,8 +1,10 @@
-import flet as ft
-import sys
 from pathlib import Path
-import main as app_main
+import sys
 import threading
+
+import flet as ft
+
+import main as app_main
 
 
 def get_default_download_dir() -> Path:
