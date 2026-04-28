@@ -69,6 +69,22 @@ class LoginScreen(ft.View):
     def handle_login(self, e):
         pass
 
+class ProjectSelectScreen(ft.View):
+    def __init__(self):
+        super().__init__(route="/project-select")
+        self.horizontal_alignment = "center"
+        self.vertical_alignment = "center"
+        self.controls = [
+        ]
+
+class DownloadScreen(ft.View):
+    def __init__(self):
+        super().__init__(route="/downloads")
+        self.horizontal_alignment = "center"
+        self.vertical_alignment = "center"
+        self.controls = [
+        ]
+
 def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
@@ -89,9 +105,9 @@ def main(page: ft.Page):
             case "/login":
                 page.views.append(LoginScreen())
             case "/project-select":
-                pass
+                page.views.append(ProjectSelectScreen())
             case "/downloads":
-                pass
+                page.views.append(DownloadScreen())
         page.update()
 
     async def view_pop(e):
