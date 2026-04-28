@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 import sys
 import threading
@@ -18,7 +19,7 @@ ASSETS_DIR = BASE_DIR / "assets"
 
 class LoginScreen(ft.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(route="/login")
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
 
@@ -72,12 +73,30 @@ def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
     page.window.height = 720
-     
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
-    dw = app_main.DownloadController()
+    page.route = "/login"
 
-    page.views.append(LoginScreen())
+    dw = app_main.DownloadController()
+    
+    def route_change(e=None):
+        page.views.clear()
+        # page.views.append(ft.View(route="/"))
+        match page.route:
+            case "/login":
+                page.views.append(LoginScreen())
+        page.update()
+
+    async def view_pop(e):
+        if e.view is not None:
+            page.views.remove(e.view)
+            top_view = page.views[-1]
+            await page.push_route(top_view.route)
+
+    page.on_route_change = route_change
+    page.on_view_pop = view_pop
+
+    route_change()
 
 ft.run(main)
