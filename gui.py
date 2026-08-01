@@ -7,7 +7,6 @@ import flet as ft
 
 import main as app_main
 
-
 def get_default_download_dir() -> Path:
     downloads = Path.home() / "Downloads"
     base_dir = downloads if downloads.exists() else Path.home()
@@ -15,7 +14,6 @@ def get_default_download_dir() -> Path:
 
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
-
 
 class LoginScreen(ft.View):
     def __init__(self):
