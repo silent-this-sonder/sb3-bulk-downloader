@@ -108,18 +108,20 @@ class LoginScreen(ft.View):
             await self.main_page.push_route("/project-select")
 
 class ProjectSelectScreen(ft.View):
-    def __init__(self, dw):
+    def __init__(self, page: ft.Page, dw):
         super().__init__(route="/project-select")
         self.dw = dw
+        self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
         self.controls = [
         ]
 
 class DownloadScreen(ft.View):
-    def __init__(self, dw):
+    def __init__(self, page: ft.Page, dw):
         super().__init__(route="/downloads")
         self.dw = dw
+        self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
         self.controls = [
@@ -145,9 +147,9 @@ def main(page: ft.Page):
             case "/login":
                 page.views.append(LoginScreen(page, dw))
             case "/project-select":
-                page.views.append(ProjectSelectScreen(dw))
+                page.views.append(ProjectSelectScreen(page, dw))
             case "/downloads":
-                page.views.append(DownloadScreen(dw))
+                page.views.append(DownloadScreen(page, dw))
         page.update()
 
     async def view_pop(e):
