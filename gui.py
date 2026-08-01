@@ -23,6 +23,9 @@ class LoginScreen(ft.View):
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
 
+        self.fail_counter = 0
+        self.empty_counter = 0
+
         self.logo_image = ft.Image(
             src=str(ASSETS_DIR / "logo.png"),
             width=200,
@@ -67,7 +70,42 @@ class LoginScreen(ft.View):
         ]
 
     def handle_login(self, e):
-        pass
+        # just for the funsies
+        with open("assets/login_messages.txt", "r", encoding="utf-8") as f:
+            login_messages = f.readlines()
+
+        # check if someone made it empty so it doesn't keep sending fail requests to scratch and get flagged or smth
+        if self.empty_counter < len(login_messages) and (not self.username_field.value or not self.password_field.value):
+            dlg = ft.AlertDialog(
+                title="Login Failed",
+                content=ft.Text(login_messages[self.empty_counter]),
+                actions=[ft.TextButton("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                on_dismiss=lambda e: None
+            )
+            self.main_page.show_dialog(dlg)
+            self.empty_counter += 1
+            return
+
+        success = self.dw.validate_login(self.username_field.value, self.password_field.value)
+        if not success:
+            self.fail_counter += 1
+            if self.fail_counter >= 4:
+                dlg = ft.AlertDialog(
+                    title="Login Failed",
+                    content=ft.Text("Are you guessing passwords or something? Please type valid Scratch Account credentials. If you keep messing up, your IP might get banned by Scratch."),
+                    actions=[ft.TextButton("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                    on_dismiss=lambda e: None
+                )
+            else:
+                dlg = ft.AlertDialog(
+                    title="Login Failed",
+                    content=ft.Text("Try again. Try not to mess up many times or Scratch might flag you as a clanker."),
+                    actions=[ft.TextButton("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                    on_dismiss=lambda e: None
+                )
+            self.main_page.show_dialog(dlg)
+        else:
+            ProjectSelectScreen()
 
 class ProjectSelectScreen(ft.View):
     def __init__(self, dw):
