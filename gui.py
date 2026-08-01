@@ -69,7 +69,7 @@ class LoginScreen(ft.View):
             self.login_btn
         ]
 
-    def handle_login(self, e):
+    async def handle_login(self, e):
         # just for the funsies
         with open("assets/login_messages.txt", "r", encoding="utf-8") as f:
             login_messages = f.readlines()
@@ -105,7 +105,7 @@ class LoginScreen(ft.View):
                 )
             self.main_page.show_dialog(dlg)
         else:
-            ProjectSelectScreen()
+            await self.main_page.push_route("/project-select")
 
 class ProjectSelectScreen(ft.View):
     def __init__(self, dw):
