@@ -112,7 +112,24 @@ class ProjectSelectScreen(ft.View):
         self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
+
+        self.title = ft.Text(
+            "Project Selection",
+            size=32,
+            weight="w600"
+        )
+        self.project_optmenu = ft.Dropdown(
+            width=220,
+            value="all",
+            options=[
+                ft.DropdownOption(key="all", text="all"),
+                ft.DropdownOption(key="shared", text="shared"),
+                ft.DropdownOption(key="unshared", text="unshared"),
+            ],
+        )
         self.controls = [
+            self.title,
+            self.project_optmenu,
         ]
 
 class DownloadScreen(ft.View):
