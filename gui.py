@@ -16,8 +16,10 @@ BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
 class LoginScreen(ft.View):
-    def __init__(self):
+    def __init__(self, page: ft.Page, dw):
         super().__init__(route="/login")
+        self.dw = dw
+        self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
 
@@ -68,16 +70,18 @@ class LoginScreen(ft.View):
         pass
 
 class ProjectSelectScreen(ft.View):
-    def __init__(self):
+    def __init__(self, dw):
         super().__init__(route="/project-select")
+        self.dw = dw
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
         self.controls = [
         ]
 
 class DownloadScreen(ft.View):
-    def __init__(self):
+    def __init__(self, dw):
         super().__init__(route="/downloads")
+        self.dw = dw
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
         self.controls = [
@@ -101,11 +105,11 @@ def main(page: ft.Page):
                 # TODO: turn into the home screen later
                 page.views.append(ft.View(route="/"))
             case "/login":
-                page.views.append(LoginScreen())
+                page.views.append(LoginScreen(page, dw))
             case "/project-select":
-                page.views.append(ProjectSelectScreen())
+                page.views.append(ProjectSelectScreen(dw))
             case "/downloads":
-                page.views.append(DownloadScreen())
+                page.views.append(DownloadScreen(dw))
         page.update()
 
     async def view_pop(e):
