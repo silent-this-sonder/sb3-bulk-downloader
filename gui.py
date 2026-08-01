@@ -1,7 +1,5 @@
-import asyncio
 from pathlib import Path
 import sys
-import threading
 
 import flet as ft
 
