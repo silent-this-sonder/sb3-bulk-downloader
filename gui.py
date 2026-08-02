@@ -15,7 +15,6 @@ ASSETS_DIR = BASE_DIR / "assets"
 
 class LoginScreen(ft.View):
     def __init__(self, page: ft.Page, dw: app_main.DownloadController):
-        # TODO: connect to logic
         super().__init__(route="/login")
         self.dw = dw
         self.main_page = page
@@ -160,6 +159,22 @@ class ProjectSelectScreen(ft.View):
             self.browse_button,
             self.download_button
         ]
+
+    # TODO: write these functions and connect them to controls
+    def select_all_projects(self):
+        pass
+
+    def deselect_all_projects(self):
+        pass
+
+    def browse_output_dir(self):
+        pass
+
+    def get_selected_projects(self):
+        pass
+
+    def download_selected_projects(self):
+        pass
 
     def handle_filter_change(self, e):
         self.project_label.value = "Loading projects"
