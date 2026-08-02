@@ -16,7 +16,7 @@ ASSETS_DIR = BASE_DIR / "assets"
 # TODO: set logo image
 
 class LoginScreen(ft.View):
-    def __init__(self, page: ft.Page, dw):
+    def __init__(self, page: ft.Page, dw: app_main.DownloadController):
         # TODO: connect to logic
         super().__init__(route="/login")
         self.dw = dw
@@ -109,7 +109,7 @@ class LoginScreen(ft.View):
             await self.main_page.push_route("/project-select")
 
 class ProjectSelectScreen(ft.View):
-    def __init__(self, page: ft.Page, dw):
+    def __init__(self, page: ft.Page, dw: app_main.DownloadController):
         super().__init__(route="/project-select")
         self.dw = dw
         self.main_page = page
@@ -165,7 +165,7 @@ class ProjectSelectScreen(ft.View):
         ]
 
 class DownloadScreen(ft.View):
-    def __init__(self, page: ft.Page, dw):
+    def __init__(self, page: ft.Page, dw: app_main.DownloadController):
         super().__init__(route="/downloads")
         self.dw = dw
         self.main_page = page
