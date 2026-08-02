@@ -114,7 +114,7 @@ class ProjectSelectScreen(ft.View):
         self.vertical_alignment = "center"
 
         self.title = ft.Text(
-            "Project Selection",
+            "Project to Download",
             size=32,
             weight="w600"
         )
