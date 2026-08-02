@@ -141,8 +141,6 @@ class ProjectSelectScreen(ft.View):
             width=480, height=300,
             controls=[]
         )
-        # TODO: self.project_checklist.controls.append()
-        # TODO: self.project_checklist.update()
 
         self.skip_existing_checkbox = ft.Checkbox(
             "Skip already downloaded projects (resume previous unfinished downloads)",
