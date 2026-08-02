@@ -13,8 +13,6 @@ def get_default_download_dir() -> Path:
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
-# TODO: set logo image
-
 class LoginScreen(ft.View):
     def __init__(self, page: ft.Page, dw: app_main.DownloadController):
         # TODO: connect to logic
@@ -28,7 +26,7 @@ class LoginScreen(ft.View):
         self.empty_counter = 0
 
         self.logo_image = ft.Image(
-            src=str(ASSETS_DIR / "logo.png"),
+            src=str(ASSETS_DIR / "icon.png"),
             width=200,
             height=200,
             fit="contain",
@@ -208,6 +206,12 @@ def main(page: ft.Page):
     page.route = "/login"
 
     dw = app_main.DownloadController()
+
+    try: 
+         # again this only works for compiled so we dont wanna explode it if it fails in regular python
+        page.window.icon = str(ASSETS_DIR / "icon.ico")
+    except:
+        pass
     
     def route_change(e=None):
         page.views.clear()
