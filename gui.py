@@ -25,7 +25,7 @@ class LoginScreen(ft.View):
         self.empty_counter = 0
 
         self.logo_image = ft.Image(
-            src=str(ASSETS_DIR / "icon.png"),
+            src=str(ASSETS_DIR / "logo.png"),
             width=200,
             height=200,
             fit="contain",
