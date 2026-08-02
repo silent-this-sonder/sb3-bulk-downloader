@@ -113,6 +113,8 @@ class ProjectSelectScreen(ft.View):
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
 
+        self.output_dir = get_default_download_dir()
+
         self.title = ft.Text(
             "Projects to Download",
             size=32,
@@ -127,9 +129,32 @@ class ProjectSelectScreen(ft.View):
                 ft.DropdownOption(key="unshared", text="unshared"),
             ],
         )
+        self.project_selectall_button = ft.TextButton("Select all")
+        self.project_checklist = ft.ListView(
+            spacing=10,
+            padding=20,
+            width=300, height=300,
+            controls=[]
+        )
+        self.skip_existing_checkbox = ft.Checkbox(
+            "Skip already downloaded projects (resume previous unfinished downloads)",
+            True
+        )
+        self.output_dir_label = ft.Text(
+            f"Output: {self.output_dir}"
+        )
+        self.browse_button = ft.TextButton("Browse...")
+        self.download_button = ft.TextButton("Download selected", disabled=True)
+
         self.controls = [
             self.title,
             self.project_optmenu,
+            self.project_selectall_button,
+            self.project_checklist,
+            self.skip_existing_checkbox,
+            self.output_dir_label,
+            self.browse_button,
+            self.download_button
         ]
 
 class DownloadScreen(ft.View):
