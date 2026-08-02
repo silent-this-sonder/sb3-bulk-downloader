@@ -77,7 +77,7 @@ class LoginScreen(ft.View):
             dlg = ft.AlertDialog(
                 title="Login Failed",
                 content=ft.Text(login_messages[self.empty_counter]),
-                actions=[ft.TextButton("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                actions=[ft.Button("OK", on_click=lambda e: self.main_page.pop_dialog())],
                 on_dismiss=lambda e: None
             )
             self.main_page.show_dialog(dlg)
@@ -91,14 +91,14 @@ class LoginScreen(ft.View):
                 dlg = ft.AlertDialog(
                     title="Login Failed",
                     content=ft.Text("Are you guessing passwords or something? Please type valid Scratch Account credentials. If you keep messing up, your IP might get banned by Scratch."),
-                    actions=[ft.TextButton("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                    actions=[ft.Button("OK", on_click=lambda e: self.main_page.pop_dialog())],
                     on_dismiss=lambda e: None
                 )
             else:
                 dlg = ft.AlertDialog(
                     title="Login Failed",
                     content=ft.Text("Try again. Try not to mess up many times or Scratch might flag you as a clanker."),
-                    actions=[ft.TextButton("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                    actions=[ft.Button("OK", on_click=lambda e: self.main_page.pop_dialog())],
                     on_dismiss=lambda e: None
                 )
             self.main_page.show_dialog(dlg)
@@ -129,7 +129,7 @@ class ProjectSelectScreen(ft.View):
                 ft.DropdownOption(key="unshared", text="unshared"),
             ],
         )
-        self.project_selectall_button = ft.TextButton("Select all")
+        self.project_selectall_button = ft.Button("Select all")
         self.project_checklist = ft.ListView(
             spacing=10,
             padding=20,
@@ -143,8 +143,8 @@ class ProjectSelectScreen(ft.View):
         self.output_dir_label = ft.Text(
             f"Output: {self.output_dir}"
         )
-        self.browse_button = ft.TextButton("Browse...")
-        self.download_button = ft.TextButton("Download selected", disabled=True)
+        self.browse_button = ft.Button("Browse...")
+        self.download_button = ft.Button("Download selected", disabled=True)
 
         self.controls = [
             self.title,
