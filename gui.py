@@ -136,9 +136,9 @@ class ProjectSelectScreen(ft.View):
         )
         self.project_selectall_button = ft.Button("Select all")
         self.project_checklist = ft.ListView(
-            spacing=10,
-            padding=20,
-            width=300, height=300,
+            spacing=2,
+            padding=10,
+            width=480, height=300,
             controls=[]
         )
         # TODO: self.project_checklist.controls.append()
