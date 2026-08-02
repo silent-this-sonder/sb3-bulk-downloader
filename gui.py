@@ -131,7 +131,10 @@ class ProjectSelectScreen(ft.View):
             ],
             on_select=self.handle_filter_change
         )
-        self.project_selectall_button = ft.Button("Select all")
+        self.project_selectall_button = ft.Button(
+            "Select all",
+            on_click=self.select_all_projects
+        )
         self.project_checklist = ft.ListView(
             spacing=2,
             padding=10,
@@ -161,11 +164,15 @@ class ProjectSelectScreen(ft.View):
         ]
 
     # TODO: write these functions and connect them to controls
-    def select_all_projects(self):
-        pass
+    def select_all_projects(self, e):
+        for c in self.project_checklist.controls:
+            c.value = True
+        self.project_selectall_button.on_click = self.deselect_all_projects
 
-    def deselect_all_projects(self):
-        pass
+    def deselect_all_projects(self, e):
+        for c in self.project_checklist.controls:
+            c.value = False
+        self.project_selectall_button.on_click = self.select_all_projects
 
     def browse_output_dir(self):
         pass
