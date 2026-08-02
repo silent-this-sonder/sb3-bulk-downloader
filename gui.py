@@ -123,16 +123,17 @@ class ProjectSelectScreen(ft.View):
             size=32,
             weight="w600"
         )
+        self.project_label = ft.Text("", size=16)
         self.project_optmenu = ft.Dropdown(
             width=220,
-            value="all",
+            hint_text="Sort by",
             options=[
                 ft.DropdownOption(key="all", text="all"),
                 ft.DropdownOption(key="shared", text="shared"),
                 ft.DropdownOption(key="unshared", text="unshared"),
             ],
+            on_select=self.handle_filter_change
         )
-        # TODO: [num of projects] projects found
         self.project_selectall_button = ft.Button("Select all")
         self.project_checklist = ft.ListView(
             spacing=10,
@@ -163,6 +164,31 @@ class ProjectSelectScreen(ft.View):
             self.browse_button,
             self.download_button
         ]
+
+    def handle_filter_change(self, e):
+        self.project_label.value = "Loading projects"
+        self.controls.insert(1, self.project_label)
+        self.project_optmenu.disabled = True
+        self.page.update()
+        try:
+            filter_arg = e.control.value
+            projects = self.dw.get_projects(filter_arg)
+            self.project_label.value = f"Loading projects...{len(projects)} projects found"
+            self.page.update()
+
+            self.project_checklist.controls.clear()
+            for project in projects:
+                cb = ft.Checkbox(label=project.title, value=False)
+                self.project_checklist.controls.append(cb)
+
+            self.project_optmenu.disabled = False
+            self.controls.remove(self.project_label)
+            self.page.update()
+        except:
+            self.project_label.value = "Projects failed to load"
+            self.page.update()
+            print("boooooooom ")
+            # TODO: i love explosions as much as the next guy but we should insert a better error message
 
 class DownloadScreen(ft.View):
     def __init__(self, page: ft.Page, dw: app_main.DownloadController):
