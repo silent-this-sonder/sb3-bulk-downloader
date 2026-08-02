@@ -13,8 +13,11 @@ def get_default_download_dir() -> Path:
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
+# TODO: set logo image
+
 class LoginScreen(ft.View):
     def __init__(self, page: ft.Page, dw):
+        # TODO: connect to logic
         super().__init__(route="/login")
         self.dw = dw
         self.main_page = page
@@ -129,6 +132,7 @@ class ProjectSelectScreen(ft.View):
                 ft.DropdownOption(key="unshared", text="unshared"),
             ],
         )
+        # TODO: [num of projects] projects found
         self.project_selectall_button = ft.Button("Select all")
         self.project_checklist = ft.ListView(
             spacing=10,
@@ -136,6 +140,9 @@ class ProjectSelectScreen(ft.View):
             width=300, height=300,
             controls=[]
         )
+        # TODO: self.project_checklist.controls.append()
+        # TODO: self.project_checklist.update()
+
         self.skip_existing_checkbox = ft.Checkbox(
             "Skip already downloaded projects (resume previous unfinished downloads)",
             True
