@@ -183,7 +183,7 @@ class ProjectSelectScreen(ft.View):
     def download_selected_projects(self):
         pass
 
-    def handle_filter_change(self, e):
+    async def handle_filter_change(self, e):
         self.project_label.value = "Loading projects"
         self.controls.insert(1, self.project_label)
         self.project_optmenu.disabled = True
@@ -198,6 +198,7 @@ class ProjectSelectScreen(ft.View):
             for project in projects:
                 cb = ft.Checkbox(label=project.title, value=False)
                 self.project_checklist.controls.append(cb)
+            await self.project_checklist.scroll_to(offset=0, duration=1000)
 
             self.project_optmenu.disabled = False
             self.controls.remove(self.project_label)
