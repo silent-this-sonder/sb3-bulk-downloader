@@ -149,7 +149,11 @@ class ProjectSelectScreen(ft.View):
         self.output_dir_label = ft.Text(
             f"Output: {self.output_dir}"
         )
-        self.browse_button = ft.Button("Browse...")
+        self.browse_button = ft.Button(
+            "Browse...",
+            on_click=self.browse_output_dir
+        )
+        self.filedialog = ft.FilePicker()
         self.download_button = ft.Button("Download selected", disabled=True)
 
         self.controls = [
@@ -174,8 +178,12 @@ class ProjectSelectScreen(ft.View):
             c.value = False
         self.project_selectall_button.on_click = self.select_all_projects
 
-    def browse_output_dir(self):
-        pass
+    async def browse_output_dir(self, e):
+        chosen = await self.filedialog.get_directory_path()
+        if chosen:
+            self.output_dir = Path(chosen)
+            self.output_dir_label.value = f"Output {self.output_dir}"
+            self.page.update()
 
     def get_selected_projects(self):
         pass
