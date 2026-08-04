@@ -206,8 +206,10 @@ class ProjectSelectScreen(ft.View):
 
         if total_projects == 0:
             dlg = ft.AlertDialog(
-                "Please select at least one project.",
-                title="Nothing selected"
+                title="Nothing selected",
+                content=ft.Text("Please select at least one project."),
+                actions=[ft.Button("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                on_dismiss=lambda e: None
             )
             self.main_page.show_dialog(dlg)
             return
