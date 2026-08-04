@@ -194,7 +194,7 @@ class ProjectSelectScreen(ft.View):
     def get_selected_projects(self):
         '''Returns a list of the indices of checked boxes'''
         selected = []
-        for i in len(self.project_checklist.controls):
+        for i in range(len(self.project_checklist.controls)):
             checked = self.project_checklist.controls[i].value
             if checked:
                 selected.append(i)
