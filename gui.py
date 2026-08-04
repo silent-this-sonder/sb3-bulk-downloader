@@ -224,6 +224,7 @@ class ProjectSelectScreen(ft.View):
         try:
             filter_arg = e.control.value
             projects = self.dw.get_projects(filter_arg)
+            self.download_button.disabled = True
             self.project_label.value = f"Loading projects...{len(projects)} projects found"
             self.page.update()
 
@@ -233,6 +234,7 @@ class ProjectSelectScreen(ft.View):
                 self.project_checklist.controls.append(cb)
             await self.project_checklist.scroll_to(offset=0, duration=1000)
 
+            self.download_button.disabled = False
             self.project_optmenu.disabled = False
             self.controls.remove(self.project_label)
             self.page.update()
