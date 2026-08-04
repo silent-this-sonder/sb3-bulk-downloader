@@ -253,7 +253,39 @@ class DownloadScreen(ft.View):
         self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
+
+        self.title = ft.Text(
+            "Download in Progress",
+            size=32,
+            weight="w600"
+        )
+        # progress bar for current project
+        self.cur_download_progress = ft.ProgressBar(
+            width=500, height=40
+        )
+        # progress bar for all projects
+        self.all_download_progress = ft.ProgressBar(
+            width=500, height=40
+        )
+        # labels for progress
+        self.cur_download_label = ft.Text(
+            "Currently downloading [asset title], [num] / [total] assets downloaded"
+        )
+        self.all_download_label = ft.Text(
+            "Currently downloading [project title], [num] / [total] projects downloaded"
+        )
+        self.back_button = ft.Button(
+            content="Back to Projects",
+            disabled=True
+        )
+
         self.controls = [
+            self.title,
+            self.cur_download_progress,
+            self.cur_download_label,
+            self.all_download_progress,
+            self.all_download_label,
+            self.back_button
         ]
 
 def main(page: ft.Page):
