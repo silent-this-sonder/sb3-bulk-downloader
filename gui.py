@@ -156,7 +156,11 @@ class ProjectSelectScreen(ft.View):
             on_click=self.browse_output_dir
         )
         self.filedialog = ft.FilePicker()
-        self.download_button = ft.Button("Download selected", disabled=True)
+        self.download_button = ft.Button(
+            "Download selected",
+            on_click=self.download_selected_projects,
+            disabled=True
+        )
 
         self.controls = [
             self.title,
@@ -196,8 +200,21 @@ class ProjectSelectScreen(ft.View):
                 selected.append(i)
         return selected
 
-    def download_selected_projects(self):
-        pass
+    async def download_selected_projects(self, e):
+        selected = self.get_selected_projects()
+        total_projects = len(selected)
+
+        if total_projects == 0:
+            dlg = ft.AlertDialog(
+                "Please select at least one project.",
+                title="Nothing selected"
+            )
+            self.main_page.show_dialog(dlg)
+            return
+
+        step_val = 1.0 / total_projects
+        await self.main_page.push_route("/downloads")
+        # TODO: pass in step_val and selected projects
 
     async def handle_filter_change(self, e):
         self.project_label.value = "Loading projects"
