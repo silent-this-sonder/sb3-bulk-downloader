@@ -286,6 +286,17 @@ class DownloadScreen(ft.View):
             self.back_button
         ]
 
+    def download_selected_projects(self, selected, total_projects, step_val, skip_existing):
+        info = DOWNLOAD_CONTROLLER.progress_bar_info
+        info["downloaded_projects"] = 0
+        info["total_projects"] = total_projects
+        info["downloaded_assets"] = 0
+        info["total_assets"] = 0
+        info["current_project"] = "Starting..."
+
+        self.back_button.disabled = True
+        self.all_download_label.value = f"0 / {total_projects} projects downloaded"
+
 async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
