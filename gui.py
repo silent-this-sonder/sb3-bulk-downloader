@@ -286,7 +286,7 @@ class DownloadScreen(ft.View):
             self.back_button
         ]
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
     page.window.height = 720
@@ -325,5 +325,6 @@ def main(page: ft.Page):
     page.on_view_pop = view_pop
 
     route_change()
+    await page.window.center()
 
 ft.run(main)
