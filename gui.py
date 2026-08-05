@@ -296,7 +296,7 @@ async def main(page: ft.Page):
     page.route = "/login"
 
     try: 
-         # again this only works for compiled so we dont wanna explode it if it fails in regular python
+        # again this only works for compiled so we dont wanna explode it if it fails in regular python
         page.window.icon = str(ASSETS_DIR / "icon.ico")
     except:
         pass
