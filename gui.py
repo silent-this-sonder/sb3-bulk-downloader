@@ -15,6 +15,13 @@ ASSETS_DIR = BASE_DIR / "assets"
 
 # TODO: look at old tkinter code and make sure all functionality is there
 DOWNLOAD_CONTROLLER = app_main.DownloadController()
+# there's probably like a much better way to do this but i'll fix it later
+download_args = {
+    "selected": None,
+    "total_projects": None,
+    "step_val": None,
+    "skip_existing": None
+}
 
 class LoginScreen(ft.View):
     def __init__(self, page: ft.Page):
@@ -214,8 +221,11 @@ class ProjectSelectScreen(ft.View):
             return
 
         step_val = 1.0 / total_projects
+        download_args["selected"] = selected
+        download_args["total_projects"] = total_projects
+        download_args["step_val"] = step_val
+        download_args["skip_existing"] = self.skip_existing_checkbox.value
         await self.main_page.push_route("/downloads")
-        # TODO: pass in step_val and selected projects
 
     async def handle_filter_change(self, e):
         self.project_label.value = "Loading projects"
