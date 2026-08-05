@@ -14,11 +14,11 @@ BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
 # TODO: look at old tkinter code and make sure all functionality is there
+DOWNLOAD_CONTROLLER = app_main.DownloadController()
 
 class LoginScreen(ft.View):
-    def __init__(self, page: ft.Page, dw: app_main.DownloadController):
+    def __init__(self, page: ft.Page):
         super().__init__(route="/login")
-        self.dw = dw
         self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
@@ -86,7 +86,7 @@ class LoginScreen(ft.View):
             self.empty_counter += 1
             return
 
-        success = self.dw.validate_login(self.username_field.value, self.password_field.value)
+        success = DOWNLOAD_CONTROLLER.validate_login(self.username_field.value, self.password_field.value)
         if not success:
             self.fail_counter += 1
             if self.fail_counter >= 4:
@@ -108,9 +108,8 @@ class LoginScreen(ft.View):
             await self.main_page.push_route("/project-select")
 
 class ProjectSelectScreen(ft.View):
-    def __init__(self, page: ft.Page, dw: app_main.DownloadController):
+    def __init__(self, page: ft.Page):
         super().__init__(route="/project-select")
-        self.dw = dw
         self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
@@ -225,7 +224,7 @@ class ProjectSelectScreen(ft.View):
         self.page.update()
         try:
             filter_arg = e.control.value
-            projects = self.dw.get_projects(filter_arg)
+            projects = DOWNLOAD_CONTROLLER.get_projects(filter_arg)
             self.download_button.disabled = True
             self.project_label.value = f"Loading projects...{len(projects)} projects found"
             self.page.update()
@@ -247,9 +246,8 @@ class ProjectSelectScreen(ft.View):
             # TODO: i love explosions as much as the next guy but we should insert a better error message
 
 class DownloadScreen(ft.View):
-    def __init__(self, page: ft.Page, dw: app_main.DownloadController):
+    def __init__(self, page: ft.Page):
         super().__init__(route="/downloads")
-        self.dw = dw
         self.main_page = page
         self.horizontal_alignment = "center"
         self.vertical_alignment = "center"
@@ -297,8 +295,6 @@ def main(page: ft.Page):
 
     page.route = "/login"
 
-    dw = app_main.DownloadController()
-
     try: 
          # again this only works for compiled so we dont wanna explode it if it fails in regular python
         page.window.icon = str(ASSETS_DIR / "icon.ico")
@@ -312,11 +308,11 @@ def main(page: ft.Page):
                 # TODO: turn into the home screen later
                 page.views.append(ft.View(route="/"))
             case "/login":
-                page.views.append(LoginScreen(page, dw))
+                page.views.append(LoginScreen(page))
             case "/project-select":
-                page.views.append(ProjectSelectScreen(page, dw))
+                page.views.append(ProjectSelectScreen(page))
             case "/downloads":
-                page.views.append(DownloadScreen(page, dw))
+                page.views.append(DownloadScreen(page))
         page.update()
 
     async def view_pop(e):
