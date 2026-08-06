@@ -307,6 +307,16 @@ class DownloadScreen(ft.View):
         self.back_button.disabled = True
         self.all_download_label.value = f"0 / {total_projects} projects downloaded"
 
+        # TODO: actually download the projects and update the progress bars
+
+    def update_progress(self):
+        # TODO: update the progress bars with how much has been downloaded
+        pass
+
+    def on_downloads_completed(self):
+        # TODO: update the text labels and reset the disabled buttons to normal
+        pass
+
 async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
