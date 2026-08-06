@@ -35,8 +35,8 @@ jobs:
             run_cmd: "sb3-bulk-downloader-macos"
             artifact_path: "sb3-bulk-downloader-macos.app"
             icon_arg: "--macos-app-icon=assets/icon.icns"
-    
-steps:
+
+    steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -112,7 +112,7 @@ steps:
             
           p.terminate()
           EOF
-          
+
       - name: Run App & Capture Screen (Linux)
         if: runner.os == 'Linux'
         shell: bash
@@ -122,6 +122,15 @@ steps:
         if: runner.os != 'Linux'
         shell: bash
         run: python runner.py "${{ matrix.run_cmd }}"
+
+      - name: Zip Mac Bundle
+        if: runner.os == 'macOS'
+        run: zip -r sb3-bulk-downloader-macos.zip sb3-bulk-downloader-macos.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}
+          path: ${{ runner.os == 'macOS' && 'sb3-bulk-downloader-macos.zip' || matrix.artifact_path }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -134,50 +143,93 @@ steps:
     permissions:
       contents: write
       pull-requests: write
-  
+
     steps:
       - uses: actions/checkout@v4
-  
+
       - uses: actions/download-artifact@v4
         with:
-          path: /tmp/screenshots
-          pattern: screenshot-*
+          path: /tmp/artifacts
           merge-multiple: true
-  
-      # Push screenshots to a dedicated branch — never the PR branch
+
       - name: Publish screenshots to dedicated branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-  
+
           if git fetch origin screenshots 2>/dev/null; then
             git checkout -B screenshots FETCH_HEAD
           else
             git checkout --orphan screenshots
             git rm -rf . --quiet || true
           fi
-  
+
           mkdir -p pr-${{ github.event.pull_request.number }}
-          cp /tmp/screenshots/*.png pr-${{ github.event.pull_request.number }}/
+          cp /tmp/artifacts/*.png pr-${{ github.event.pull_request.number }}/
           git add pr-${{ github.event.pull_request.number }}
           git diff --staged --quiet || git commit -m "screenshots: PR #${{ github.event.pull_request.number }} [skip ci]"
           git push origin HEAD:refs/heads/screenshots
-  
+
+      # Create Prerelease using GH CLI
+      - name: Create GitHub Release
+        id: create_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHORT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
+          TAG="${SHORT_SHA}-alpha"
+          BUILD_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          cat << EOF > release_notes.md
+          ### Canary Pre-release 
+
+          This is an automated test build of the sb3-bulk-downloader. It is created using the most recent code, which means it WILL be buggy. This is code that has not passed code review nor is it expected to be finished. If you need a functioning release, select the "latest" release, not the ones marked with prerelease. 
+
+          **Commit:** ${{ github.event.pull_request.head.sha }}
+          **PR Number:** #${{ github.event.pull_request.number }}
+          **Date and Time built:** ${BUILD_DATE}
+
+          ### Screenshots 
+
+          | OS | Screenshot |
+          |----|------------|
+          | <img width="12" height="12" alt="Ubuntu Logo" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/ubuntu-latest.png" width="700" /> |
+          | <img width="12" height="12" alt="Windows Logo" src="https://github.com/user-attachments/assets/4da4c060-732a-4aaf-b080-6b8de0600c71" /> Windows | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/windows-latest.png" width="700" /> |
+          | <img width="12" height="12" alt="Apple Logo" src="https://github.com/user-attachments/assets/636ee068-b7a7-489d-a545-a616534900ed" /> MacOS | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/macos-latest.png" width="700" /> |
+          EOF
+          Since this is a canary release, here's a picture of a canary just because:
+          <img width="100" height="90" alt="image" src="https://github.com/user-attachments/assets/7bc329d2-62df-4f71-887e-2eeebbf1272a" />
+          :trollface:
+
+          # Create prerelease and upload executables/zips
+          gh release create "$TAG" \
+            /tmp/artifacts/sb3-bulk-downloader-* \
+            --title "$TAG" \
+            --notes-file release_notes.md \
+            --prerelease \
+            --target ${{ github.event.pull_request.head.sha }}
+
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${TAG}"
+          echo "release_url=${RELEASE_URL}" >> $GITHUB_OUTPUT
+
       - uses: peter-evans/find-comment@v3
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: 'Screenshots Table'
-  
+
       - uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
+            
+            Test Build Release: (clicky the linky to download the buildy) [${{ github.event.pull_request.head.sha }} Prerelease](${{ steps.create_release.outputs.release_url }}).
+
             ### Screenshots Table
-  
+
             | OS | Screenshot |
             |----|------------|
             | <img width="12" height="12" alt="Ubuntu Logo" src="https://github.com/user-attachments/assets/f61ac63e-1fc8-4577-9fb1-736d921b81a2" /> Ubuntu | <img src="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/pr-${{ github.event.pull_request.number }}/ubuntu-latest.png" width="700" /> |
