@@ -164,7 +164,7 @@ class ProjectSelectScreen(ft.View):
         self.filedialog = ft.FilePicker()
         self.download_button = ft.Button(
             "Download selected",
-            on_click=self.download_selected_projects,
+            on_click=self.prepare_for_download,
             disabled=True
         )
 
@@ -205,7 +205,7 @@ class ProjectSelectScreen(ft.View):
                 selected.append(i)
         return selected
 
-    async def download_selected_projects(self, e):
+    async def prepare_for_download(self, e):
         selected = self.get_selected_projects()
         total_projects = len(selected)
 
