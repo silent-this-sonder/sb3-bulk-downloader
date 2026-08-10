@@ -123,6 +123,7 @@ class ProjectSelectScreen(ft.View):
         self.vertical_alignment = "center"
 
         self.output_dir = get_default_download_dir()
+        DOWNLOAD_CONTROLLER.output_dir = self.output_dir
 
         self.title = ft.Text(
             "Projects to Download",
@@ -196,6 +197,7 @@ class ProjectSelectScreen(ft.View):
             self.output_dir = Path(chosen)
             self.output_dir_label.value = f"Output {self.output_dir}"
             self.page.update()
+            DOWNLOAD_CONTROLLER.output_dir = self.output_dir
 
     def get_selected_projects(self):
         '''Returns a list of the indices of checked boxes'''
