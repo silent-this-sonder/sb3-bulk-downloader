@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+from threading import Thread
 
 import flet as ft
 
@@ -294,10 +295,17 @@ class DownloadScreen(ft.View):
             self.all_download_label,
             self.back_button
         ]
+        self.download_selected_projects(
+            download_args["selected"],
+            download_args["total_projects"],
+            download_args["step_val"],
+            download_args["skip_existing"]
+        )
 
     def download_selected_projects(self, selected, total_projects, step_val, skip_existing):
         info = DOWNLOAD_CONTROLLER.progress_bar_info
         info["downloaded_projects"] = 0
+        info["processed_projects"] = 0
         info["total_projects"] = total_projects
         info["downloaded_assets"] = 0
         info["total_assets"] = 0
@@ -306,7 +314,30 @@ class DownloadScreen(ft.View):
         self.back_button.disabled = True
         self.all_download_label.value = f"0 / {total_projects} projects downloaded"
 
-        # TODO: actually download the projects and update the progress bars
+        # TODO: use self.main_page.run_task instead?
+        Thread(
+            target=self._download_projects,
+            args=(selected, skip_existing),
+            daemon=True
+        ).start()
+
+    def _download_projects(self, selected, skip_existing):
+        info = DOWNLOAD_CONTROLLER.progress_bar_info
+        for p_index in selected:
+            download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
+            if not download:
+                # retry one more time before giving up
+                download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
+            if not download:
+                dlg = ft.AlertDialog(
+                    title="Download Failed",
+                    content=ft.Text(f"Failed to download project at index {p_index}. Skipping."),
+                    actions=[ft.Button("OK", on_click=lambda e: self.main_page.pop_dialog())],
+                    on_dismiss=lambda e: None
+                )
+                self.main_page.show_dialog(dlg)
+            info["processed_projects"] += 1
+        # TODO: call on_downloads_completed()
 
     def update_progress(self):
         # TODO: update the progress bars with how much has been downloaded
