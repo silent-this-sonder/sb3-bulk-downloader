@@ -179,7 +179,6 @@ class ProjectSelectScreen(ft.View):
             self.download_button
         ]
 
-    # TODO: write these functions and connect them to controls
     def select_all_projects(self, e):
         for c in self.project_checklist.controls:
             c.value = True
