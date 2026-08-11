@@ -330,7 +330,7 @@ class DownloadScreen(ft.View):
                 )
                 self.main_page.show_dialog(dlg)
             info["processed_projects"] += 1
-        # TODO: call on_downloads_completed()
+        self.on_downloads_completed()
 
     # TODO: call _update_progress
     async def _update_progress(self):
@@ -352,8 +352,10 @@ class DownloadScreen(ft.View):
         self.main_page.update()
 
     def on_downloads_completed(self):
-        # TODO: update the text labels and reset the disabled buttons to normal
-        pass
+        self.cur_download_label.value ="Finished downloading!"
+        self.all_download_label.value = "All projects processed"
+        self.back_button.disabled = False
+        self.main_page.update()
 
 async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
