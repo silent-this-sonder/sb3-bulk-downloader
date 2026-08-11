@@ -1,6 +1,5 @@
 from pathlib import Path
 import sys
-from threading import Thread
 
 import flet as ft
 
@@ -297,33 +296,25 @@ class DownloadScreen(ft.View):
             self.all_download_label,
             self.back_button
         ]
-        self.download_selected_projects(
-            download_args["selected"],
-            download_args["total_projects"],
-            download_args["step_val"],
-            download_args["skip_existing"]
-        )
+        self.download_selected_projects()
 
-    def download_selected_projects(self, selected, total_projects, step_val, skip_existing):
+    def download_selected_projects(self):
         info = DOWNLOAD_CONTROLLER.progress_bar_info
         info["downloaded_projects"] = 0
         info["processed_projects"] = 0
-        info["total_projects"] = total_projects
+        info["total_projects"] = download_args["total_projects"]
         info["downloaded_assets"] = 0
         info["total_assets"] = 0
         info["current_project"] = "Starting..."
 
         self.back_button.disabled = True
-        self.all_download_label.value = f"0 / {total_projects} projects downloaded"
+        self.all_download_label.value = f"0 / {download_args['total_projects']} projects downloaded"
 
-        # TODO: use self.main_page.run_task instead?
-        Thread(
-            target=self._download_projects,
-            args=(selected, skip_existing),
-            daemon=True
-        ).start()
+        self.main_page.run_task(self._download_projects)
 
-    def _download_projects(self, selected, skip_existing):
+    async def _download_projects(self):
+        selected = download_args["selected"]
+        skip_existing = download_args["skip_existing"]
         info = DOWNLOAD_CONTROLLER.progress_bar_info
         for p_index in selected:
             download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
