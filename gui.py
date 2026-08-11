@@ -332,9 +332,24 @@ class DownloadScreen(ft.View):
             info["processed_projects"] += 1
         # TODO: call on_downloads_completed()
 
-    def update_progress(self):
-        # TODO: update the progress bars with how much has been downloaded
-        pass
+    # TODO: call _update_progress
+    async def _update_progress(self):
+        info = DOWNLOAD_CONTROLLER.progress_bar_info
+        # update current project progress
+        if info["total_assets"] > 0:
+            cur_progress = info["downloaded_assets"] / info["total_assets"]
+        else:
+            cur_progress = 0
+        self.cur_download_progress.value = cur_progress
+        self.cur_download_label.value = f"Currently downloading {info['current_project']}, {info['downloaded_assets']} / {info['total_assets']} assets downloaded"
+        # update all projects progress
+        if info["total_projects"] > 0:
+            all_progress = info["processed_projects"] / info["total_projects"]
+        else:
+            all_progress = 0  
+        self.all_download_progress.value = all_progress
+        self.all_download_label.value = f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
+        self.main_page.update()
 
     def on_downloads_completed(self):
         # TODO: update the text labels and reset the disabled buttons to normal
