@@ -285,6 +285,7 @@ class DownloadScreen(ft.View):
         )
         self.back_button = ft.Button(
             content="Back to Projects",
+            on_click=self.go_back,
             disabled=True
         )
 
@@ -297,6 +298,9 @@ class DownloadScreen(ft.View):
             self.back_button
         ]
         self.download_selected_projects()
+
+    async def go_back(self):
+        await self.main_page.push_route("/project-select")
 
     def download_selected_projects(self):
         info = DOWNLOAD_CONTROLLER.progress_bar_info
