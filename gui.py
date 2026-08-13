@@ -361,7 +361,8 @@ class DownloadProgressBars(ft.Column):
 
     async def update_progress(self):
         info = DOWNLOAD_CONTROLLER.progress_bar_info
-        while info["processed_projects"] < info["total_projects"]:
+        while self.running:
+            print("Updating progress")
             # update current project progress
             if info["total_assets"] > 0:
                 cur_progress = info["downloaded_assets"] / info["total_assets"]
@@ -377,6 +378,9 @@ class DownloadProgressBars(ft.Column):
             self.all_download_progress.value = all_progress
             self.all_download_label.value = f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
             self.main_page.update()
+            # end if finished
+            if info["processed_projects"] == info["total_projects"]:
+                return
             asyncio.sleep(0.1)
 
 async def main(page: ft.Page):
