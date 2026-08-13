@@ -381,7 +381,7 @@ class DownloadProgressBars(ft.Column):
             # end if finished
             if info["processed_projects"] == info["total_projects"]:
                 return
-            asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
 
 async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
