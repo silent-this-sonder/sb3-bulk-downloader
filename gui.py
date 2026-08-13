@@ -268,21 +268,7 @@ class DownloadScreen(ft.View):
             size=32,
             weight="w600"
         )
-        # progress bar for current project
-        self.cur_download_progress = ft.ProgressBar(
-            width=500, height=40
-        )
-        # progress bar for all projects
-        self.all_download_progress = ft.ProgressBar(
-            width=500, height=40
-        )
-        # labels for progress
-        self.cur_download_label = ft.Text(
-            "Currently downloading [asset title], [num] / [total] assets downloaded"
-        )
-        self.all_download_label = ft.Text(
-            "Currently downloading [project title], [num] / [total] projects downloaded"
-        )
+        self.progress_bars = DownloadProgressBars(self.main_page)
         self.back_button = ft.Button(
             content="Back to Projects",
             on_click=self.go_back,
@@ -291,10 +277,7 @@ class DownloadScreen(ft.View):
 
         self.controls = [
             self.title,
-            self.cur_download_progress,
-            self.cur_download_label,
-            self.all_download_progress,
-            self.all_download_label,
+            self.progress_bars,
             self.back_button
         ]
         self.download_selected_projects()
@@ -312,7 +295,7 @@ class DownloadScreen(ft.View):
         info["current_project"] = "Starting..."
 
         self.back_button.disabled = True
-        self.all_download_label.value = f"0 / {download_args['total_projects']} projects downloaded"
+        self.progress_bars.all_download_label.value = f"0 / {download_args['total_projects']} projects downloaded"
 
         self.main_page.run_task(self._download_projects)
 
@@ -336,30 +319,64 @@ class DownloadScreen(ft.View):
             info["processed_projects"] += 1
         self.on_downloads_completed()
 
-    # TODO: call _update_progress
-    async def _update_progress(self):
-        info = DOWNLOAD_CONTROLLER.progress_bar_info
-        # update current project progress
-        if info["total_assets"] > 0:
-            cur_progress = info["downloaded_assets"] / info["total_assets"]
-        else:
-            cur_progress = 0
-        self.cur_download_progress.value = cur_progress
-        self.cur_download_label.value = f"Currently downloading {info['current_project']}, {info['downloaded_assets']} / {info['total_assets']} assets downloaded"
-        # update all projects progress
-        if info["total_projects"] > 0:
-            all_progress = info["processed_projects"] / info["total_projects"]
-        else:
-            all_progress = 0  
-        self.all_download_progress.value = all_progress
-        self.all_download_label.value = f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
-        self.main_page.update()
-
     def on_downloads_completed(self):
-        self.cur_download_label.value ="Finished downloading!"
-        self.all_download_label.value = "All projects processed"
+        self.progress_bars.cur_download_label.value ="Finished downloading!"
+        self.progress_bars.all_download_label.value = "All projects processed"
         self.back_button.disabled = False
         self.main_page.update()
+
+class DownloadProgressBars(ft.Column):
+    def __init__(self, page: ft.Page):
+        super().__init__(horizontal_alignment="center", intrinsic_width=True)
+        self.main_page = page
+
+        # progress bar for current project
+        self.cur_download_progress = ft.ProgressBar(
+            width=500, height=40
+        )
+        # progress bar for all projects
+        self.all_download_progress = ft.ProgressBar(
+            width=500, height=40
+        )
+        # labels for progress
+        self.cur_download_label = ft.Text(
+            "Currently downloading [asset title], [num] / [total] assets downloaded"
+        )
+        self.all_download_label = ft.Text(
+            "Currently downloading [project title], [num] / [total] projects downloaded"
+        )
+        self.controls = [
+            self.cur_download_progress,
+            self.cur_download_label,
+            self.all_download_progress,
+            self.all_download_label
+        ]
+
+    def did_mount(self):
+        self.running = True
+        self.main_page.run_task(self.update_progress)
+
+    def will_unmount(self):
+        self.running = False
+
+    async def update_progress(self):
+        info = DOWNLOAD_CONTROLLER.progress_bar_info
+        while info["processed_projects"] < info["total_projects"]:
+            # update current project progress
+            if info["total_assets"] > 0:
+                cur_progress = info["downloaded_assets"] / info["total_assets"]
+            else:
+                cur_progress = 0
+            self.cur_download_progress.value = cur_progress
+            self.cur_download_label.value = f"Currently downloading {info['current_project']}, {info['downloaded_assets']} / {info['total_assets']} assets downloaded"
+            # update all projects progress
+            if info["total_projects"] > 0:
+                all_progress = info["processed_projects"] / info["total_projects"]
+            else:
+                all_progress = 0  
+            self.all_download_progress.value = all_progress
+            self.all_download_label.value = f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
+            self.main_page.update()
 
 async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
