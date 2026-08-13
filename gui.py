@@ -298,19 +298,20 @@ class DownloadScreen(ft.View):
         self.back_button.disabled = True
         self.progress_bars.all_download_label.value = f"0 / {download_args['total_projects']} projects downloaded"
 
-    def did_mount(self):
-        self.running = True
-        self.main_page.run_task(self._download_projects)
+        self.main_page.run_task(self._download_and_update_progress)
 
-    def will_unmount(self):
-        self.running = False
+    async def _download_and_update_progress(self):
+        await asyncio.gather(
+            self._download_projects(),
+            self.progress_bars.update_progress()
+        )
 
     async def _download_projects(self):
         selected = download_args["selected"]
         skip_existing = download_args["skip_existing"]
         info = DOWNLOAD_CONTROLLER.progress_bar_info
         for p_index in selected:
-            download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
+            download = await DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
             if not download:
                 # retry one more time before giving up
                 download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
@@ -358,17 +359,9 @@ class DownloadProgressBars(ft.Column):
             self.all_download_label
         ]
 
-    def did_mount(self):
-        self.running = True
-        self.main_page.run_task(self.update_progress)
-
-    def will_unmount(self):
-        self.running = False
-
     async def update_progress(self):
         info = DOWNLOAD_CONTROLLER.progress_bar_info
-        while self.running:
-            print("Updating progress")
+        while True:
             # update current project progress
             if info["total_assets"] > 0:
                 cur_progress = info["downloaded_assets"] / info["total_assets"]

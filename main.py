@@ -1,9 +1,9 @@
+from asyncio import sleep
 from getpass import getpass
 import json
 import os
 import shutil
 import string
-import time as t
 import traceback
 import warnings
 import zipfile
@@ -106,7 +106,7 @@ class DownloadController:
         """
         return self.progress_bar_info[key]
 
-    def download_project(self, p_index, skip_existing=False):
+    async def download_project(self, p_index, skip_existing=False):
         """Downloads a project from Scratch onto the user's device.
         
         Args:
@@ -175,7 +175,7 @@ class DownloadController:
             self.progress_bar_info["downloaded_projects"] += 1
 
             # sleep 3 seconds so scratch doesn't rate limit
-            t.sleep(3)
+            await sleep(3)
             return True
         except Exception as e:
             print(f"Failed to process project {p.id}: {e}")
