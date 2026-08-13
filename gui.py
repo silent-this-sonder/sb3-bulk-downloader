@@ -332,11 +332,11 @@ class DownloadProgressBars(ft.Column):
 
         # progress bar for current project
         self.cur_download_progress = ft.ProgressBar(
-            width=500, height=40
+            width=500, height=40, value=0
         )
         # progress bar for all projects
         self.all_download_progress = ft.ProgressBar(
-            width=500, height=40
+            width=500, height=40, value=0
         )
         # labels for progress
         self.cur_download_label = ft.Text(
