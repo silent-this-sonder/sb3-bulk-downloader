@@ -297,7 +297,12 @@ class DownloadScreen(ft.View):
         self.back_button.disabled = True
         self.progress_bars.all_download_label.value = f"0 / {download_args['total_projects']} projects downloaded"
 
+    def did_mount(self):
+        self.running = True
         self.main_page.run_task(self._download_projects)
+
+    def will_unmount(self):
+        self.running = False
 
     async def _download_projects(self):
         selected = download_args["selected"]
