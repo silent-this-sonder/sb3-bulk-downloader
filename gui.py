@@ -377,6 +377,7 @@ class DownloadProgressBars(ft.Column):
             self.all_download_progress.value = all_progress
             self.all_download_label.value = f"{info['downloaded_projects']} / {info['total_projects']} projects downloaded"
             self.main_page.update()
+            asyncio.sleep(0.1)
 
 async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
