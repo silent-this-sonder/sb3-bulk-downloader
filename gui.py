@@ -183,11 +183,13 @@ class ProjectSelectScreen(ft.View):
     def select_all_projects(self, e):
         for c in self.project_checklist.controls:
             c.value = True
+        self.project_selectall_button.content = "Deselect all"
         self.project_selectall_button.on_click = self.deselect_all_projects
 
     def deselect_all_projects(self, e):
         for c in self.project_checklist.controls:
             c.value = False
+        self.project_selectall_button.content = "Select all"
         self.project_selectall_button.on_click = self.select_all_projects
 
     async def browse_output_dir(self, e):
