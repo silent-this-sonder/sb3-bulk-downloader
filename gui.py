@@ -301,17 +301,18 @@ class DownloadScreen(ft.View):
         self.main_page.run_task(self._download_and_update_progress)
 
     async def _download_and_update_progress(self):
+        download_projects_task = asyncio.to_thread(self._download_projects)
         await asyncio.gather(
-            self._download_projects(),
+            download_projects_task,
             self.progress_bars.update_progress()
         )
 
-    async def _download_projects(self):
+    def _download_projects(self):
         selected = download_args["selected"]
         skip_existing = download_args["skip_existing"]
         info = DOWNLOAD_CONTROLLER.progress_bar_info
         for p_index in selected:
-            download = await DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
+            download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
             if not download:
                 # retry one more time before giving up
                 download = DOWNLOAD_CONTROLLER.download_project(p_index, skip_existing)
