@@ -14,7 +14,6 @@ def get_default_download_dir() -> Path:
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
 
-# TODO: look at old tkinter code and make sure all functionality is there
 DOWNLOAD_CONTROLLER = app_main.DownloadController()
 # there's probably like a much better way to do this but i'll fix it later
 download_args = {
