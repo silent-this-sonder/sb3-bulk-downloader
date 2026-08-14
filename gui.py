@@ -234,6 +234,9 @@ class ProjectSelectScreen(ft.View):
         self.project_label.value = "Loading projects"
         self.controls.insert(1, self.project_label)
         self.project_optmenu.disabled = True
+        # reset select all button
+        self.project_selectall_button.content = "Select all"
+        self.project_selectall_button.on_click = self.select_all_projects
         self.page.update()
         try:
             filter_arg = e.control.value
