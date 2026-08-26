@@ -394,6 +394,13 @@ async def main(page: ft.Page):
     page.horizontal_alignment = "center"
     page.vertical_alignment = "center"
 
+    page.fonts = {
+        "texgyreheros": "texgyreheros.gyreheros-regular.otf"
+    }
+    page.theme = ft.Theme(
+        font_family="texgyreheros"
+    )
+
     page.route = "/login"
 
     try: 
@@ -428,4 +435,4 @@ async def main(page: ft.Page):
     route_change()
     await page.window.center()
 
-ft.run(main)
+ft.run(main, assets_dir="assets")
