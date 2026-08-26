@@ -23,6 +23,15 @@ download_args = {
     "skip_existing": None
 }
 
+LIGHT_THEME = ft.Theme(
+    font_family="texgyreheros",
+    color_scheme_seed="#855cd6",
+    button_theme=ft.ButtonTheme(ft.ButtonStyle(
+        color="white",
+        bgcolor="#855cd6"
+    ))
+)
+
 class LoginScreen(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(route="/login")
@@ -51,9 +60,7 @@ class LoginScreen(ft.View):
         )
         self.login_btn = ft.Button(
             content="Sign in",
-            on_click=self.handle_login,
-            color="white",
-            bgcolor="#855cd6"
+            on_click=self.handle_login
         )
         self.username_field = ft.TextField(
             label="Username",
@@ -397,9 +404,7 @@ async def main(page: ft.Page):
     page.fonts = {
         "texgyreheros": "texgyreheros.gyreheros-regular.otf"
     }
-    page.theme = ft.Theme(
-        font_family="texgyreheros"
-    )
+    page.theme = LIGHT_THEME
 
     page.route = "/login"
 
