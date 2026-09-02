@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 import string
-import time as t
+from time import sleep
 import traceback
 import warnings
 import zipfile
@@ -175,7 +175,7 @@ class DownloadController:
             self.progress_bar_info["downloaded_projects"] += 1
 
             # sleep 3 seconds so scratch doesn't rate limit
-            t.sleep(3)
+            sleep(3)
             return True
         except Exception as e:
             print(f"Failed to process project {p.id}: {e}")
