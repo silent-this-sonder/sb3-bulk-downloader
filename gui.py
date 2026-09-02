@@ -17,10 +17,10 @@ ASSETS_DIR = BASE_DIR / "assets"
 DOWNLOAD_CONTROLLER = app_main.DownloadController()
 # there's probably like a much better way to do this but i'll fix it later
 download_args = {
-    "selected": None,
-    "total_projects": None,
-    "step_val": None,
-    "skip_existing": None
+    "selected": [],
+    "total_projects": 0,
+    "step_val": 0,
+    "skip_existing": True
 }
 
 LIGHT_THEME = ft.Theme(
@@ -129,7 +129,7 @@ class ProjectSelectScreen(ft.View):
         self.vertical_alignment = ft.MainAxisAlignment.CENTER
 
         self.output_dir = get_default_download_dir()
-        DOWNLOAD_CONTROLLER.output_dir = self.output_dir
+        DOWNLOAD_CONTROLLER.output_dir = str(self.output_dir)
 
         self.title = ft.Text(
             "Projects to Download",
@@ -205,7 +205,7 @@ class ProjectSelectScreen(ft.View):
             self.output_dir = Path(chosen)
             self.output_dir_label.value = f"Output {self.output_dir}"
             self.page.update()
-            DOWNLOAD_CONTROLLER.output_dir = self.output_dir
+            DOWNLOAD_CONTROLLER.output_dir = str(self.output_dir)
 
     def get_selected_projects(self):
         '''Returns a list of the indices of checked boxes'''
