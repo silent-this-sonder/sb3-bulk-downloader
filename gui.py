@@ -36,8 +36,8 @@ class LoginScreen(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(route="/login")
         self.main_page = page
-        self.horizontal_alignment = "center"
-        self.vertical_alignment = "center"
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        self.vertical_alignment = ft.MainAxisAlignment.CENTER
 
         self.fail_counter = 0
         self.empty_counter = 0
@@ -46,12 +46,12 @@ class LoginScreen(ft.View):
             src=str(ASSETS_DIR / "logo.png"),
             width=200,
             height=200,
-            fit="contain",
+            fit=ft.BoxFit.CONTAIN,
         )
         self.sb_text = ft.Text(
             "Scratch Project Bulk Downloader",
             size=32,
-            weight="w600"
+            weight=ft.FontWeight.W_600
         )
         self.disclaimer  = ft.Text(
             "Credentials are only sent to Scratch's servers, and we don't store them.",
@@ -125,8 +125,8 @@ class ProjectSelectScreen(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(route="/project-select")
         self.main_page = page
-        self.horizontal_alignment = "center"
-        self.vertical_alignment = "center"
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        self.vertical_alignment = ft.MainAxisAlignment.CENTER
 
         self.output_dir = get_default_download_dir()
         DOWNLOAD_CONTROLLER.output_dir = self.output_dir
@@ -134,7 +134,7 @@ class ProjectSelectScreen(ft.View):
         self.title = ft.Text(
             "Projects to Download",
             size=32,
-            weight="w600"
+            weight=ft.FontWeight.W_600
         )
         self.project_label = ft.Text("", size=16)
         self.project_optmenu = ft.Dropdown(
@@ -272,13 +272,13 @@ class DownloadScreen(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(route="/downloads")
         self.main_page = page
-        self.horizontal_alignment = "center"
-        self.vertical_alignment = "center"
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        self.vertical_alignment = ft.MainAxisAlignment.CENTER
 
         self.title = ft.Text(
             "Download in Progress",
             size=32,
-            weight="w600"
+            weight=ft.FontWeight.W_600
         )
         self.progress_bars = DownloadProgressBars(self.main_page)
         self.back_button = ft.Button(
@@ -346,7 +346,7 @@ class DownloadScreen(ft.View):
 
 class DownloadProgressBars(ft.Column):
     def __init__(self, page: ft.Page):
-        super().__init__(horizontal_alignment="center", intrinsic_width=True)
+        super().__init__(horizontal_alignment=ft.CrossAxisAlignment.CENTER, intrinsic_width=True)
         self.main_page = page
 
         # progress bar for current project
@@ -398,8 +398,8 @@ async def main(page: ft.Page):
     page.title = "SB3 Bulk Downloader"
     page.window.width = 960
     page.window.height = 720
-    page.horizontal_alignment = "center"
-    page.vertical_alignment = "center"
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     page.fonts = {
         "texgyreheros": "texgyreheros.gyreheros-regular.otf"
