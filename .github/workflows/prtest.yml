@@ -171,7 +171,9 @@ jobs:
 
       - name: Zip Mac Bundle
         if: runner.os == 'macOS'
-        run: zip -r sb3-bulk-downloader-macos.zip sb3-bulk-downloader-macos.app
+        run: |
+          mv gui.app sb3-bulk-downloader-macos.app
+          zip -r sb3-bulk-downloader-macos.zip sb3-bulk-downloader-macos.app
 
       - uses: actions/upload-artifact@v4
         with:
